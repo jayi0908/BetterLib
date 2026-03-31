@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@tailwindcss preflight;
+@tailwind utilities;
+
+/* 屏蔽默认背景色，防止闪烁 */
+body {
+  background-color: #0E0F11;
+  color: #E0E0E0;
+  margin: 0;
+}
+
+/* 我们在 Dashboard 中用到的自定义暗黑滚动条 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2B2D31;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #444444;
+}

@@ -1,0 +1,1143 @@
+{
+    "areas":[
+        "72", "68", "73", "69", 
+        "106", "107", "108", "109", "110", "111", "88", "89", "90", "91", "92", "93", "94", "95", "115", "117", "119", "121", "122", "123", "97", "98", "99", "100", "101", "102", "103", "104", 
+        "81", "82", "83", "84", "86", "87", 
+        "125", "144", "145", "146", "147", "148", "149", "150", "151", "152", "153", "154", "155", "156", "157", "158", "124", "129", "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "140", "141", "142", "143", "126", "127", "128",
+        "24", "25",
+        "202", "203", "204", "205", "206", "207", "208", "209", "210", "211", "212", "213",
+        "214", "215", "216"
+    ],
+    "72": {
+        "name": "主馆-二层-206(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-二层东",
+        "path": "room/main/2F/206",
+        "floor": "room/main/2F"
+    },
+    "68": {
+        "name": "主馆-二层-207(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-二层东",
+        "path": "room/main/2F/207",
+        "floor": "room/main/2F"
+    },
+    "73": {
+        "name": "主馆-二层-208(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-二层东",
+        "path": "room/main/2F/208",
+        "floor": "room/main/2F"
+    },
+    "69": {
+        "name": "主馆-二层-209(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-二层东",
+        "path": "room/main/2F/209",
+        "floor": "room/main/2F"
+    },
+    "106": {
+        "name": "主馆-三层-304(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/304",
+        "floor": "room/main/3F"
+    },
+    "107": {
+        "name": "主馆-三层-305(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/305",
+        "floor": "room/main/3F"
+    },
+    "108": {
+        "name": "主馆-三层-306(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "有投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/306",
+        "floor": "room/main/3F"
+    },
+    "109": {
+        "name": "主馆-三层-307(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/307",
+        "floor": "room/main/3F"
+    },
+    "110": {
+        "name": "主馆-三层-308(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座升降椅",
+            "有投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/308",
+        "floor": "room/main/3F"
+    },
+    "111": {
+        "name": "主馆-三层-309(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东南角",
+        "path": "room/main/3F/309",
+        "floor": "room/main/3F"
+    },
+    "88": {
+        "name": "主馆-三层-310(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/310",
+        "floor": "room/main/3F"
+    },
+    "89": {
+        "name": "主馆-三层-311(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "有投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/311",
+        "floor": "room/main/3F"
+    },
+    "90": {
+        "name": "主馆-三层-312(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/312",
+        "floor": "room/main/3F"
+    },
+    "91": {
+        "name": "主馆-三层-313(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座",
+            "有投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/313",
+        "floor": "room/main/3F"
+    },
+    "92": {
+        "name": "主馆-三层-314(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座",
+            "有投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/314",
+        "floor": "room/main/3F"
+    },
+    "93": {
+        "name": "主馆-三层-315(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/315",
+        "floor": "room/main/3F"
+    },
+    "94": {
+        "name": "主馆-三层-316(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/316",
+        "floor": "room/main/3F"
+    },
+    "95": {
+        "name": "主馆-三层-317(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西南角",
+        "path": "room/main/3F/317",
+        "floor": "room/main/3F"
+    },
+    "115": {
+        "name": "主馆-三层-325(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/325",
+        "floor": "room/main/3F"
+    },
+    "117": {
+        "name": "主馆-三层-327(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/327",
+        "floor": "room/main/3F"
+    },
+    "119": {
+        "name": "主馆-三层-328(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/328",
+        "floor": "room/main/3F"
+    },
+    "121": {
+        "name": "主馆-三层-329(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/329",
+        "floor": "room/main/3F"
+    },
+    "122": {
+        "name": "主馆-三层-330(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/330",
+        "floor": "room/main/3F"
+    },
+    "123": {
+        "name": "主馆-三层-331(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层西北角",
+        "path": "room/main/3F/331",
+        "floor": "room/main/3F"
+    },
+    "97": {
+        "name": "主馆-三层-332(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/332",
+        "floor": "room/main/3F"
+    },
+    "98": {
+        "name": "主馆-三层-333(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座升降椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/333",
+        "floor": "room/main/3F"
+    },
+    "99": {
+        "name": "主馆-三层-334(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "有投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/334",
+        "floor": "room/main/3F"
+    },
+    "100": {
+        "name": "主馆-三层-335(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "有投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/335",
+        "floor": "room/main/3F"
+    },
+    "101": {
+        "name": "主馆-三层-336(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/336",
+        "floor": "room/main/3F"
+    },
+    "102": {
+        "name": "主馆-三层-337(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/337",
+        "floor": "room/main/3F"
+    },
+    "103": {
+        "name": "主馆-三层-338(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/338",
+        "floor": "room/main/3F"
+    },
+    "104": {
+        "name": "主馆-三层-339(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "硬座",
+            "无投影屏"
+        ],
+        "location": "主馆-三层东北角",
+        "path": "room/main/3F/339",
+        "floor": "room/main/3F"
+    },
+    "81": {
+        "name": "主馆-四层-405(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "有投影屏"
+        ],
+        "location": "主馆-四层西南角",
+        "path": "room/main/4F/405",
+        "floor": "room/main/4F"
+    },
+    "82": {
+        "name": "主馆-四层-406(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "硬座转椅",
+            "无投影屏"
+        ],
+        "location": "主馆-四层西南角",
+        "path": "room/main/4F/406",
+        "floor": "room/main/4F"
+    },
+    "83": {
+        "name": "主馆-四层-407(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "软座转椅",
+            "有投影屏"
+        ],
+        "location": "主馆-四层西南角",
+        "path": "room/main/4F/407",
+        "floor": "room/main/4F"
+    },
+    "84": {
+        "name": "主馆-四层-408(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "有桌上插座",
+            "硬座",
+            "无投影屏"
+        ],
+        "location": "主馆-四层西南角",
+        "path": "room/main/4F/408",
+        "floor": "room/main/4F"
+    },
+    "86": {
+        "name": "主馆-四层-418(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-四层西北角",
+        "path": "room/main/4F/418",
+        "floor": "room/main/4F"
+    },
+    "87": {
+        "name": "主馆-四层-419(8人间)",
+        "venues": "53",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "feature": [
+            "无桌上插座",
+            "软座",
+            "无投影屏"
+        ],
+        "location": "主馆-四层西北角",
+        "path": "room/main/4F/419",
+        "floor": "room/main/4F"
+    },
+    "125": {
+        "name": "主馆-五层-5SC01(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC01",
+        "floor": "room/main/5F"
+    },
+    "144": {
+        "name": "主馆-五层-5SC02(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC02",
+        "floor": "room/main/5F"
+    },
+    "145": {
+        "name": "主馆-五层-5SC03(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC03",
+        "floor": "room/main/5F"
+    },
+    "146": {
+        "name": "主馆-五层-5SC04(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC04",
+        "floor": "room/main/5F"
+    },
+    "147": {
+        "name": "主馆-五层-5SC05(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC05",
+        "floor": "room/main/5F"
+    },
+    "148": {
+        "name": "主馆-五层-5SC06(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC06",
+        "floor": "room/main/5F"
+    },
+    "149": {
+        "name": "主馆-五层-5SC07(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "1",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC07",
+        "floor": "room/main/5F"
+    },
+    "150": {
+        "name": "主馆-五层-5SC08(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "1",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC08",
+        "floor": "room/main/5F"
+    },
+    "151": {
+        "name": "主馆-五层-5SC09(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC09",
+        "floor": "room/main/5F"
+    },
+    "152": {
+        "name": "主馆-五层-5SC10(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC10",
+        "floor": "room/main/5F"
+    },
+    "153": {
+        "name": "主馆-五层-5SC11(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC11",
+        "floor": "room/main/5F"
+    },
+    "154": {
+        "name": "主馆-五层-5SC12(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC12",
+        "floor": "room/main/5F"
+    },
+    "155": {
+        "name": "主馆-五层-5SC13(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC13",
+        "floor": "room/main/5F"
+    },
+    "156": {
+        "name": "主馆-五层-5SC14(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC14",
+        "floor": "room/main/5F"
+    },
+    "157": {
+        "name": "主馆-五层-5SC15(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC15",
+        "floor": "room/main/5F"
+    },
+    "158": {
+        "name": "主馆-五层-5SC16(E)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层东",
+        "path": "room/main/5F/5SC16",
+        "floor": "room/main/5F"
+    },
+    "124": {
+        "name": "主馆-五层-5SC17(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC17",
+        "floor": "room/main/5F"
+    },
+    "129": {
+        "name": "主馆-五层-5SC18(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC18",
+        "floor": "room/main/5F"
+    },
+    "130": {
+        "name": "主馆-五层-5SC19(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC19",
+        "floor": "room/main/5F"
+    },
+    "131": {
+        "name": "主馆-五层-5SC20(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC20",
+        "floor": "room/main/5F"
+    },
+    "132": {
+        "name": "主馆-五层-5SC21(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC21",
+        "floor": "room/main/5F"
+    },
+    "133": {
+        "name": "主馆-五层-5SC22(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC22",
+        "floor": "room/main/5F"
+    },
+    "134": {
+        "name": "主馆-五层-5SC23(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC23",
+        "floor": "room/main/5F"
+    },
+    "135": {
+        "name": "主馆-五层-5SC24(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC24",
+        "floor": "room/main/5F"
+    },
+    "136": {
+        "name": "主馆-五层-5SC25(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC25",
+        "floor": "room/main/5F"
+    },
+    "137": {
+        "name": "主馆-五层-5SC26(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC26",
+        "floor": "room/main/5F"
+    },
+    "138": {
+        "name": "主馆-五层-5SC27(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC27",
+        "floor": "room/main/5F"
+    },
+    "139": {
+        "name": "主馆-五层-5SC28(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC28",
+        "floor": "room/main/5F"
+    },
+    "140": {
+        "name": "主馆-五层-5SC29(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC29",
+        "floor": "room/main/5F"
+    },
+    "141": {
+        "name": "主馆-五层-5SC30(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC30",
+        "floor": "room/main/5F"
+    },
+    "142": {
+        "name": "主馆-五层-5SC31(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC31",
+        "floor": "room/main/5F"
+    },
+    "143": {
+        "name": "主馆-五层-5SC32(W)",
+        "venues": "53",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "feature": [
+            "自动升降桌",
+            "台灯",
+            "人体工学椅",
+            "存包柜"
+        ],
+        "location": "主馆-五层西",
+        "path": "room/main/5F/5SC32",
+        "floor": "room/main/5F"
+    },
+    "126": {
+        "name": "主馆-五层-536(演播室)",
+        "typeCategory": "6",
+        "bookDay": "8",
+        "path": "room/main/5F/536"
+    },
+    "127": {
+        "name": "主馆-五层-537(录音室)",
+        "typeCategory": "6",
+        "bookDay": "8",
+        "path": "room/main/5F/537"
+    },
+    "128": {
+        "name": "主馆-五层-538(多功能摄影室)",
+        "typeCategory": "6",
+        "bookDay": "8",
+        "path": "room/main/5F/538"
+    },
+    "24": {
+        "name": "基础馆-三层-蓝色空间",
+        "typeCategory": "6",
+        "bookDay": "5",
+        "path": "room/basic/3F/BLUE"
+    },
+    "25": {
+        "name": "基础馆-三层-绿色空间",
+        "typeCategory": "6",
+        "bookDay": "5",
+        "path": "room/basic/3F/GREEN"
+    },
+    "202": {
+        "name": "农医馆-二层-209-1",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-1"
+    },
+    "203": {
+        "name": "农医馆-二层-209-2",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-2"
+    },
+    "204": {
+        "name": "农医馆-二层-209-3",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-3"
+    },
+    "205": {
+        "name": "农医馆-二层-209-4",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-4"
+    },
+    "206": {
+        "name": "农医馆-二层-209-5",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-5"
+    },
+    "207": {
+        "name": "农医馆-二层-209-6",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/209-6"
+    },
+    "208": {
+        "name": "农医馆-二层-211-1",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-1"
+    },
+    "209": {
+        "name": "农医馆-二层-211-2",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-2"
+    },
+    "210": {
+        "name": "农医馆-二层-211-3",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-3"
+    },
+    "211": {
+        "name": "农医馆-二层-211-4",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-4"
+    },
+    "212": {
+        "name": "农医馆-二层-211-5",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-5"
+    },
+    "213": {
+        "name": "农医馆-二层-211-6",
+        "typeCategory": "2",
+        "bookDay": "2",
+        "path": "room/nongyi/2F/211-6"
+    },
+    "214": {
+        "name": "农医馆-三层-311(10人)",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "path": "room/nongyi/3F/311"
+    },
+    "215": {
+        "name": "农医馆-三层-314(10人)",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "path": "room/nongyi/3F/314"
+    },
+    "216": {
+        "name": "农医馆-三层-316(10人)",
+        "typeCategory": "6",
+        "bookDay": "2",
+        "path": "room/nongyi/3F/316"
+    }
+}
