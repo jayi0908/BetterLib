@@ -13,7 +13,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有域名跨域（开发环境为了方便先写 "*"）
+    allow_origins=[
+        "http://localhost:1420",
+        "tauri://localhost",
+        "https://tauri.localhost"
+    ],
     allow_credentials=True,
     allow_methods=["*"],  # 允许所有请求方法 (GET, POST 等)
     allow_headers=["*"],  # 允许所有请求头
