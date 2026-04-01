@@ -7,9 +7,9 @@ export default defineConfig(async () => ({
     react(),
     tailwindcss(), // 2. 启用插件
   ],
-  // ... 下面是 Tauri 默认生成的其他配置，保持原样即可 ...
   clearScreen: false,
   server: {
+    host: '0.0.0.0',
     port: 1420,
     strictPort: true,
   }

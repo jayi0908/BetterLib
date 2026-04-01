@@ -42,10 +42,13 @@ export default function MainLayout() {
   return (
     <div className="flex flex-col md:flex-row h-screen bg-[#0E0F11] text-[#E0E0E0] font-sans selection:bg-blue-500/30">
       
-      {/* ================= 移动端：顶部信息栏 ================= */}
-      <header className="md:hidden h-14 border-b border-[#222326] bg-[#151618] flex items-center justify-between px-4 z-20 shrink-0">
+      {/* 移动端：顶部信息栏 (增加顶部安全区域 pt 和动态高度) */}
+      <header 
+        className="md:hidden border-b border-[#222326] bg-[#151618] flex items-center justify-between px-4 z-20 shrink-0 pt-[env(safe-area-inset-top)] pb-1"
+        style={{ minHeight: 'calc(3.5rem + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold mr-3">
+          <div className="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold mr-3">
             {userName.charAt(0)}
           </div>
           <span className="font-medium text-sm text-[#EAEAEA]">{userName}</span>
@@ -55,7 +58,7 @@ export default function MainLayout() {
         </button>
       </header>
 
-      {/* ================= PC端：极简侧边栏 ================= */}
+      {/* PC端：极简侧边栏 */}
       <aside className="hidden md:flex w-60 bg-[#151618] border-r border-[#222326] flex-col z-20 shrink-0">
         <div className="h-14 flex items-center px-4 border-b border-[#222326] relative" ref={dropdownRef}>
           <button 
@@ -103,14 +106,16 @@ export default function MainLayout() {
         </nav>
       </aside>
 
-      {/* ================= 主内容区 ================= */}
-      {/* 移动端增加 pb-16 给底部导航栏留出空间 */}
-      <main className="flex-1 overflow-hidden relative pb-16 md:pb-0">
+      {/* 主内容区 (移动端增加动态 pb，防止内容被底部导航栏和安全区遮挡) */}
+      <main className="flex-1 overflow-hidden relative pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <Outlet />
       </main>
 
-      {/* ================= 移动端：底部导航栏 ================= */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-[#151618] border-t border-[#222326] flex justify-around items-center z-50">
+      {/* 移动端：底部导航栏 (增加底部安全区域 pb 和动态高度) */}
+      <nav 
+        className="md:hidden fixed bottom-0 left-0 w-full bg-[#151618] border-t border-[#222326] flex justify-around items-center z-50 pt-2 pb-[env(safe-area-inset-bottom)]"
+        style={{ height: 'calc(4rem + env(safe-area-inset-bottom))' }}
+      >
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

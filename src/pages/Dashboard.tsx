@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, LogOut, Bell, X, ChevronRight, Map, ChevronLeft } from 'lucide-react';
+import { MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, LogOut, Bell, ChevronRight, Map, ChevronLeft } from 'lucide-react';
 import api from '../utils/api';
 
 export default function Dashboard() {
@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [notices, setNotices] = useState<any[]>([]);
-  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
+  const [, setSelectedNotice] = useState<any | null>(null);
 
   const [roomDict, setRoomDict] = useState<Record<string, any>>({});
   const [seatDict, setSeatDict] = useState<Record<string, any>>({});
