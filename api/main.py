@@ -34,6 +34,17 @@ class CancelRequest(BaseModel):
     id: str
     type: int  # 1: 座位, 2: 研讨室
 
+class PowerRequest(BaseModel):
+    req: CancelRequest
+    area_id: str
+    status: int
+
+class LightRequest(BaseModel):
+    req: CancelRequest
+    area_id: str
+    status: int
+    is_turn: bool
+
 class RoomListRequest(BaseModel):
     page: int = 1
 
@@ -90,8 +101,8 @@ async def get_rules(lib: LibCore = Depends(get_lib_core)):
     return res.get("data", {})
 
 @app.get("/venues")
-async def get_venues(lib: LibCore = Depends(get_lib_core)):
-    return lib.get_venues()
+async def get_venues(date: Optional[str] = None, lib: LibCore = Depends(get_lib_core)):
+    return lib.get_venues(date)
 
 @app.get("/seats/{area_id}")
 async def get_seats(area_id: str, lib: LibCore = Depends(get_lib_core)):
@@ -100,9 +111,9 @@ async def get_seats(area_id: str, lib: LibCore = Depends(get_lib_core)):
         raise HTTPException(status_code=404, detail="未找到该区域座位信息")
     return data
 
-@app.post("/reserve")
+@app.post("/seats/book")
 async def reserve_seat(req: ReserveRequest, lib: LibCore = Depends(get_lib_core)):
-    return lib.confirm_seat(req.seat_id, req.segment)
+    return lib.book_seat(req.seat_id, req.segment)
 
 @app.get("/reservations")
 async def list_reservations(lib: LibCore = Depends(get_lib_core)):
@@ -111,6 +122,36 @@ async def list_reservations(lib: LibCore = Depends(get_lib_core)):
 @app.post("/cancel")
 async def cancel(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
     return lib.cancel_reservation(req.id, req.type)
+
+@app.post("/seats/leave")
+async def temp_leave(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
+    if req.type != 1:
+        raise HTTPException(status_code=400, detail="临时离开仅适用于座位预约")
+    return lib.seat_leave(req.id)
+
+@app.post("/seats/return")
+async def return_seat(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
+    if req.type != 1:
+        raise HTTPException(status_code=400, detail="结束使用仅适用于座位预约")
+    return lib.seat_return(req.id)
+
+@app.post("/seats/checkout")
+async def checkout_seat(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
+    if req.type != 1:
+        raise HTTPException(status_code=400, detail="离开座位仅适用于座位预约")
+    return lib.seat_checkout(req.id)
+
+@app.post("/seats/set_power")
+async def set_power(data: PowerRequest, lib: LibCore = Depends(get_lib_core)):
+    if data.req.type != 1:
+        raise HTTPException(status_code=400, detail="设置电源仅适用于座位预约")
+    return lib.seat_set_power(data.req.id, data.area_id, data.status)
+
+@app.post("/seats/set_light")
+async def set_light(data: LightRequest, lib: LibCore = Depends(get_lib_core)):
+    if data.req.type != 1:
+        raise HTTPException(status_code=400, detail="设置灯光仅适用于座位预约")
+    return lib.seat_set_light(data.req.id, data.area_id, data.status, data.is_turn)
 
 @app.get("/name/{card}")
 async def get_name(card: str, area: str, beginTime: str, endTime: str, lib: LibCore = Depends(get_lib_core)):

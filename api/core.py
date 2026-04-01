@@ -67,11 +67,11 @@ class LibCore:
         resp = self.session.post(url, headers={"Authorization": self.authorization})
         return json.loads(resp.text).get("data", {}).get("name")
 
-    def get_venues(self):
+    def get_venues(self, date):
         url = self.host + "/reserve/index/quickSelect"
+        date = date if date else datetime.now().strftime("%Y-%m-%d")
         resp = self.session.post(url, headers={"Authorization": self.authorization}, 
-                                 json={"id":"1", "date": datetime.now().strftime("%Y-%m-%d"), 
-                                       "categoryIds":["1"], "members":0, "authorization": self.authorization})
+                                 json={"id":"1", "date": date, "categoryIds":["1"], "members":0, "authorization": self.authorization})
         return json.loads(resp.text).get("data", {})
 
     def get_seats(self, area_id):
@@ -96,7 +96,7 @@ class LibCore:
                                       })
         return {"segment": segment, "seats": json.loads(seat_resp.text).get("data", [])}
 
-    def confirm_seat(self, seat_id, segment):
+    def book_seat(self, seat_id, segment):
         aesjson = self.encrypt(json.dumps({"seat_id": seat_id, "segment": segment}))
         resp = self.session.post(self.host + "/api/Seat/confirm",
                                  headers={"Authorization": self.authorization},
@@ -112,7 +112,39 @@ class LibCore:
     def cancel_reservation(self, res_id, res_type):
         url = self.host + ("/api/Space/cancel" if res_type == 1 else "/api/space/seminarCancel")
         resp = self.session.post(url, headers={"Authorization": self.authorization},
-                                 data={"id": res_id, "authorization": self.authorization})
+                                 json={"id": res_id, "authorization": self.authorization})
+        return json.loads(resp.text)
+    
+    def seat_leave(self, res_id):
+        url = self.host + "/api/Space/leave"
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json={"id": res_id, "authorization": self.authorization})
+        return json.loads(resp.text)
+
+    def seat_return(self, res_id):
+        url = self.host + "/api/Space/signin"
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json={"id": res_id, "authorization": self.authorization})
+        return json.loads(resp.text)
+    
+    def seat_checkout(self, res_id):
+        url = self.host + "/api/Space/checkout"
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json={"id": res_id, "authorization": self.authorization})
+        return json.loads(resp.text)
+
+    def seat_set_power(self, res_id, area_id, status):
+        url = self.host + "/reserve/smartDevice/setRelayStatus"
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json={"id": res_id, "area_id": area_id, "status": status, "authorization": self.authorization})
+        return json.loads(resp.text)
+
+    def seat_set_light(self, res_id, area_id, status, is_turn):
+        if is_turn: payload = {"id": res_id, "area_id": area_id, "status": status, "authorization": self.authorization}
+        else: payload = {"id": res_id, "area_id": area_id, "brightness": status, "authorization": self.authorization}
+        url = self.host + "/reserve/smartDevice/setLightStatus"
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json=payload)
         return json.loads(resp.text)
         
     def get_notices(self, limit: int = 3, page: int = 1):
@@ -171,7 +203,6 @@ class LibCore:
         return json.loads(resp.text)
 
     def book_room(self, day: str, start_time: str, end_time: str, title: str, content: str, mobile: str, area: str, is_open: str, teamusers: str):
-        """预约研讨室 (已适配新版前端所需字段)"""
         if title == "团队讨论(班团,社团,兴趣小组,项目讨论)": titleId = "3"
         elif title == "课题研讨(导师组会,学术讨论)": titleId = "2"
         elif title == "其他研讨活动(视频会议)": titleId = "1"

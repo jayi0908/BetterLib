@@ -16,7 +16,6 @@ export default function RoomBooking() {
   const [isDictLoaded, setIsDictLoaded] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
 
-  // ======== 新增：用于控制移动端侧滑面板动画的状态 ========
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [occupancyData, setOccupancyData] = useState<any | null>(null);
@@ -27,7 +26,6 @@ export default function RoomBooking() {
   const [freeSlots, setFreeSlots] = useState<{begin: number, end: number}[]>([]);
   const [hasValidSlots, setHasValidSlots] = useState(true);
 
-  // ======== 预约表单专属状态 ========
   const [isFormView, setIsFormView] = useState(false);
   const [applicantName, setApplicantName] = useState('加载中...');
   
@@ -388,7 +386,7 @@ export default function RoomBooking() {
                         <h3 className="text-[#EAEAEA] font-semibold mb-4 flex items-center text-sm lg:text-base">
                           <Map size={18} className="mr-2 text-blue-500" /> 区域方位指示
                         </h3>
-                        <div className="w-full h-40 lg:h-56 bg-[#0E0F11] rounded-xl overflow-hidden border border-[#222326] flex items-center justify-center relative">
+                        <div className="w-full h-full lg:h-56 bg-[#0E0F11] rounded-xl overflow-hidden border border-[#222326] flex items-center justify-center relative">
                            <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                            <img 
                              src={`/${currentFloorPath}/floor.jpg`} 

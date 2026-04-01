@@ -73,7 +73,7 @@ export default function MainLayout() {
       <style>{'.html-content-wrapper * { font-family: inherit !important; color: #CCCCCC !important; background-color: transparent !important; }'}</style>
 
       {/* ================= 移动端：顶部信息栏 ================= */}
-      <header className="md:hidden border-b border-[#222326] bg-[#151618] flex items-center justify-between px-4 z-20 shrink-0 pt-[env(safe-area-inset-top)] pb-1" style={{ minHeight: 'calc(3.5rem + env(safe-area-inset-top))' }}>
+      <header className="md:hidden border-b border-[#222326] bg-[#151618] flex items-center justify-between px-4 z-60 shrink-0 pt-[env(safe-area-inset-top)] pb-1" style={{ minHeight: 'calc(3.5rem + env(safe-area-inset-top))' }}>
         <div className="flex items-center">
           <div className="w-8 h-8 rounded bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold mr-3">
             {userName.charAt(0)}
@@ -166,7 +166,7 @@ export default function MainLayout() {
       
       {/* ================= 全局弹窗：预约规则 ================= */}
       {isRulesOpen && (
-        <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 lg:p-6 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 lg:p-6 animate-in fade-in duration-200">
           <div className="bg-[#151618] border border-[#2B2D31] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="flex items-center justify-between px-4 lg:px-6 py-4 border-b border-[#222326] shrink-0 bg-[#1C1D21]">
               <h3 className="text-base lg:text-lg font-bold text-[#EAEAEA]">场馆预约规则</h3>
