@@ -13,12 +13,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:1420",
-        "tauri://localhost",
-        "https://tauri.localhost"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],  # 允许所有请求方法 (GET, POST 等)
     allow_headers=["*"],  # 允许所有请求头
 )
@@ -85,6 +81,13 @@ async def get_notices(req: dict, lib: LibCore = Depends(get_lib_core)):
 @app.post("/noticeDetail")
 async def get_notice_detail(req: dict, lib: LibCore = Depends(get_lib_core)):
     return lib.get_notice_detail(notice_id=req.get("id"))
+
+@app.get("/rules")
+async def get_rules(lib: LibCore = Depends(get_lib_core)):
+    res = lib.get_booking_rules()
+    if res.get("code") != 1:
+        raise HTTPException(status_code=400, detail=res.get("msg", "获取规则失败"))
+    return res.get("data", {})
 
 @app.get("/venues")
 async def get_venues(lib: LibCore = Depends(get_lib_core)):

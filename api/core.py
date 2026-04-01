@@ -126,6 +126,18 @@ class LibCore:
         data = {"id": notice_id, "authorization": self.authorization}
         resp = self.session.post(url, headers={"Authorization": self.authorization}, data=data)
         return json.loads(resp.text)
+    
+    def get_booking_rules(self) -> dict:
+        url = self.host + "/api/index/booking_rules"
+        resp = self.session.post(
+            url, 
+            headers={"Authorization": self.authorization}, 
+            data={"authorization": self.authorization}
+        )
+        try:
+            return json.loads(resp.text)
+        except Exception:
+            return {"code": 0, "msg": "解析规则失败", "data": {}}
 
     def get_name(self, card: str, area: str, begin_time: str, end_time: str):
         url = self.host + "/api/Seminar/group"

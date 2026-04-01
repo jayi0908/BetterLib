@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, LogOut, Bell, ChevronRight, Map, ChevronLeft } from 'lucide-react';
+import { MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, LogOut, Bell, X, ChevronRight, Map, ChevronLeft, Loader2 } from 'lucide-react';
 import api from '../utils/api';
 
 export default function Dashboard() {
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedRes, setSelectedRes] = useState<any | null>(null);
-
-  // ======== 新增：用于控制移动端侧滑面板动画的状态 ========
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [notices, setNotices] = useState<any[]>([]);
-  const [, setSelectedNotice] = useState<any | null>(null);
+  const [noticePage, setNoticePage] = useState(1);
+  const [hasMoreNotices, setHasMoreNotices] = useState(true);
+  const [loadingNotices, setLoadingNotices] = useState(false);
+  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
 
   const [roomDict, setRoomDict] = useState<Record<string, any>>({});
   const [seatDict, setSeatDict] = useState<Record<string, any>>({});
   const [isDictLoaded, setIsDictLoaded] = useState(false);
-  
   const [showFloorPlan, setShowFloorPlan] = useState(false);
 
   useEffect(() => {
     fetchData();
-    fetchNotices();
+    fetchNotices(1);
     loadLocalDictionaries();
   }, []);
 
@@ -33,34 +33,46 @@ export default function Dashboard() {
       const rsvRes = await api.get('/reservations');
       const data = Array.isArray(rsvRes.data) ? rsvRes.data : [];
       setReservations(data);
-      // PC 端默认选中第一个，移动端不默认选中以显示列表
       if (window.innerWidth >= 1024 && data.length > 0 && !selectedRes) {
         setSelectedRes(data[0]);
-        setIsMobileOpen(true); // 自动打开面板
+        setIsMobileOpen(true);
       }
     } catch (err: any) {
       console.error("获取预约失败", err);
     }
   };
 
-  const fetchNotices = async () => {
+  const fetchNotices = async (page: number) => {
+    if (loadingNotices || (!hasMoreNotices && page > 1)) return;
+    setLoadingNotices(true);
     try {
-      const res = await api.post('/notices', { limit: 5, page: 1 });
+      const res = await api.post('/notices', { limit: 5, page });
       if (res.data?.data?.data) {
-        setNotices(res.data.data.data);
+        const newData = res.data.data.data;
+        if (newData.length < 5) setHasMoreNotices(false); // 如果返回不足5条，说明没下一页了
+        setNotices(prev => page === 1 ? newData : [...prev, ...newData]);
       }
-    } catch (err) {}
+    } catch (err) {} finally {
+      setLoadingNotices(false);
+    }
+  };
+
+  const handleNoticeScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 20) {
+      if (!loadingNotices && hasMoreNotices) {
+        const nextPage = noticePage + 1;
+        setNoticePage(nextPage);
+        fetchNotices(nextPage);
+      }
+    }
   };
 
   const fetchNoticeDetail = async (id: string) => {
     try {
       const res = await api.post('/noticeDetail', { id });
-      if (res.data?.data) {
-        setSelectedNotice(res.data.data);
-      }
-    } catch (err) {
-      alert("无法加载公告内容");
-    }
+      if (res.data?.data) setSelectedNotice(res.data.data);
+    } catch (err) { alert("无法加载公告内容"); }
   };
 
   const loadLocalDictionaries = async () => {
@@ -78,33 +90,22 @@ export default function Dashboard() {
   const handleAction = async (e: React.MouseEvent, res: any, actionName: string) => {
     e.stopPropagation(); 
     if (!confirm(`确定要执行 [${actionName}] 操作吗？`)) return;
-    
     try {
-      if (actionName === '取消预约') {
-        await api.post('/cancel', { id: res.id.toString(), type: Number(res.type) });
-      } else {
-        await api.post('/placeholder_action_endpoint', {});
-      }
+      if (actionName === '取消预约') await api.post('/cancel', { id: res.id.toString(), type: Number(res.type) });
+      else await api.post('/placeholder_action_endpoint', {});
       
       alert(`${actionName} 成功`);
-      if (['取消预约', '完全离开', '结束使用'].includes(actionName)) {
-        if (selectedRes?.id === res.id) {
-          // 如果取消的是当前正在查看的预约，在移动端先滑出再清空
-          setIsMobileOpen(false);
-          setTimeout(() => setSelectedRes(null), 300);
-        }
+      if (['取消预约', '完全离开', '结束使用'].includes(actionName) && selectedRes?.id === res.id) {
+        setIsMobileOpen(false);
+        setTimeout(() => setSelectedRes(null), 300);
       }
       fetchData(); 
-    } catch (err: any) {
-      alert(`${actionName} 失败: ${err.message}`);
-    }
+    } catch (err: any) { alert(`${actionName} 失败: ${err.message}`); }
   };
 
   const formatTimeRange = (begin?: string, end?: string) => {
     if (!begin || !end) return '未知时段';
-    const b = begin.split(' ')[1]?.substring(0, 5) || '';
-    const e = end.split(' ')[1]?.substring(0, 5) || '';
-    return `${b} - ${e}`;
+    return `${begin.split(' ')[1]?.substring(0, 5)} - ${end.split(' ')[1]?.substring(0, 5)}`;
   };
 
   const renderActionButtons = (res: any) => {
@@ -153,23 +154,19 @@ export default function Dashboard() {
   const currentImageUrl = getLocalImageUrl(selectedRes, showFloorPlan);
 
   return (
-    // 外层添加 overflow-hidden 避免动画时出现滚动条
     <div className="flex h-full w-full relative overflow-hidden bg-[#0E0F11]">
       <style>{`
         .action-btn-danger { display: flex; justify-content: center; align-items: center; width: 100%; padding: 8px 0; border-radius: 8px; background-color: #222326; color: #A0A0A0; font-size: 12px; font-weight: 500; border: 1px solid transparent; transition: all 0.2s; cursor: pointer; }
         .action-btn-danger:hover { background-color: #3F1D1D; color: #F87171; border-color: rgba(248, 113, 113, 0.3); }
         .action-btn-warning { display: flex; justify-content: center; align-items: center; width: 100%; padding: 8px 0; border-radius: 8px; background-color: #222326; color: #A0A0A0; font-size: 12px; font-weight: 500; border: 1px solid transparent; transition: all 0.2s; cursor: pointer; }
         .action-btn-warning:hover { background-color: #3d2c18; color: #FBBF24; border-color: rgba(251, 191, 36, 0.3); }
-        .html-content-wrapper * { font-family: inherit !important; color: #CCCCCC !important; background-color: transparent !important; }
       `}</style>
 
-      {/* 左栏：现在永远渲染在底层，不再隐藏，PC端宽度 440px 保持规范 */}
+      {/* 左栏 */}
       <div className="w-full lg:w-110 border-r border-[#222326] flex flex-col bg-[#111214] shrink-0 h-full">
         <div className="h-14 flex items-center px-6 border-b border-[#222326] shrink-0">
           <h2 className="text-[#EAEAEA] text-sm font-semibold tracking-wide">当前预约 (Active)</h2>
-          <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-[#2B2D31] text-[#A0A0A0]">
-            {reservations.length}
-          </span>
+          <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-[#2B2D31] text-[#A0A0A0]">{reservations.length}</span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
@@ -187,7 +184,6 @@ export default function Dashboard() {
                   key={res.id || idx}
                   onClick={() => {
                     setSelectedRes(res);
-                    // 延迟 10ms 触发动画，给 React 足够的时间渲染选中状态
                     setTimeout(() => setIsMobileOpen(true), 10);
                   }}
                   className={`relative flex flex-col p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
@@ -239,7 +235,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 右栏：移动端绝对定位侧滑覆盖，PC端静态排布 */}
+      {/* 右栏 */}
       <div className={`
         absolute inset-0 z-40 lg:static lg:z-auto lg:flex-1 
         flex flex-col bg-[#0E0F11] 
@@ -250,13 +246,9 @@ export default function Dashboard() {
           <>
             <div className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[#222326] bg-[#0E0F11]/80 backdrop-blur-md z-10 shrink-0">
               <div className="flex items-center">
-                {/* 移动端返回按钮，点击后触发滑出动画 */}
                 <button 
                   className="lg:hidden mr-3 p-1.5 rounded-lg bg-[#1C1D21] border border-[#2B2D31] text-[#A0A0A0] hover:text-white transition-colors"
-                  onClick={() => {
-                    setIsMobileOpen(false);
-                    setTimeout(() => setSelectedRes(null), 300);
-                  }}
+                  onClick={() => { setIsMobileOpen(false); setTimeout(() => setSelectedRes(null), 300); }}
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -264,10 +256,7 @@ export default function Dashboard() {
                 <span className="text-[#EAEAEA] text-sm font-medium truncate max-w-37.5 sm:max-w-62.5">{selectedRes?.areaName || '空间平面图'}</span>
               </div>
               {selectedRes && Number(selectedRes.type) === 2 && (
-                <button 
-                  onClick={() => setShowFloorPlan(!showFloorPlan)}
-                  className="flex items-center px-3 py-1.5 bg-[#1C1D21] border border-[#2B2D31] hover:bg-[#2B2D31] rounded-lg text-xs font-medium text-[#A0A0A0] hover:text-[#EAEAEA] transition-colors"
-                >
+                <button onClick={() => setShowFloorPlan(!showFloorPlan)} className="flex items-center px-3 py-1.5 bg-[#1C1D21] border border-[#2B2D31] hover:bg-[#2B2D31] rounded-lg text-xs font-medium text-[#A0A0A0] hover:text-[#EAEAEA] transition-colors">
                   <Map size={14} className="mr-1.5 text-blue-500 hidden sm:block" />
                   {showFloorPlan ? '查看详情' : '区域方位'}
                 </button>
@@ -277,48 +266,44 @@ export default function Dashboard() {
             <div className="flex-1 flex flex-col relative min-h-[50%]">
               <div className="flex-1 overflow-auto p-4 flex items-center justify-center relative">
                  <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                 
                  {currentImageUrl ? (
-                   <img 
-                     src={currentImageUrl} 
-                     alt="Floor Plan" 
-                     className="max-w-full max-h-full rounded-xl shadow-2xl border border-[#222326] object-contain relative z-10"
-                     onError={(e) => {
-                       (e.target as HTMLImageElement).style.display = 'none';
-                       e.currentTarget.parentElement?.classList.add('image-failed');
-                     }}
-                   />
+                   <img src={currentImageUrl} alt="Floor Plan" className="max-w-full max-h-full rounded-xl shadow-2xl border border-[#222326] object-contain relative z-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; e.currentTarget.parentElement?.classList.add('image-failed'); }} />
                  ) : (
-                   <div className="flex flex-col items-center text-[#555555] relative z-10">
-                     <ImageIcon size={64} className="mb-4 opacity-50" strokeWidth={1} />
-                     <p className="text-sm font-medium">暂无平面图</p>
-                   </div>
+                   <div className="flex flex-col items-center text-[#555555] relative z-10"><ImageIcon size={64} className="mb-4 opacity-50" strokeWidth={1} /><p className="text-sm font-medium">暂无平面图</p></div>
                  )}
               </div>
             </div>
 
-            {/* 通知公告区 */}
-            <div className="h-auto lg:h-80 flex border-t border-[#222326] bg-[#111214] flex-col shrink-0 flex-1 lg:flex-none">
+            {/* 通知公告区 - 已附加滑动分页功能 */}
+            <div className="h-auto lg:h-80 flex border-t border-[#222326] bg-[#111214] flex-col shrink-0 min-h-0 flex-1 lg:flex-none">
               <div className="h-12 flex items-center px-4 lg:px-6 border-b border-[#222326] shrink-0 bg-[#151618]">
                 <Bell size={16} className="text-[#4F46E5] mr-2" />
                 <h3 className="text-[#EAEAEA] text-sm font-semibold tracking-wide">通知与公告</h3>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              <div 
+                className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar touch-pan-y"
+                onScroll={handleNoticeScroll}
+              >
                 {notices.length === 0 ? (
                   <p className="text-[#555555] text-sm text-center mt-10">暂无最新通知</p>
                 ) : (
-                  notices.map((notice) => (
-                    <div key={notice.id} onClick={() => fetchNoticeDetail(notice.id)} className="group flex items-center justify-between p-3.5 bg-[#18191B] border border-[#2B2D31] hover:border-[#4F46E5]/50 hover:bg-[#1C1D21] rounded-xl cursor-pointer transition-all duration-200">
-                      <div className="flex items-center overflow-hidden flex-1 mr-4">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] mr-3 shrink-0" />
-                        <span className="text-[#CCCCCC] group-hover:text-[#EAEAEA] text-sm truncate font-medium transition-colors">{notice.title}</span>
+                  <>
+                    {notices.map((notice) => (
+                      <div key={notice.id} onClick={() => fetchNoticeDetail(notice.id)} className="group flex items-center justify-between p-3.5 bg-[#18191B] border border-[#2B2D31] active:bg-[#1C1D21] lg:hover:border-[#4F46E5]/50 lg:hover:bg-[#1C1D21] rounded-xl cursor-pointer transition-all duration-200">
+                        <div className="flex items-center overflow-hidden flex-1 mr-4">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] mr-3 shrink-0" />
+                          <span className="text-[#CCCCCC] group-hover:text-[#EAEAEA] text-sm truncate font-medium transition-colors">{notice.title}</span>
+                        </div>
+                        <div className="flex items-center shrink-0">
+                          <span className="text-[#888888] text-xs font-mono mr-2 hidden sm:inline">{notice.create_time}</span>
+                          <ChevronRight size={14} className="text-[#555555] group-hover:text-[#A0A0A0] transition-colors" />
+                        </div>
                       </div>
-                      <div className="flex items-center shrink-0">
-                        <span className="text-[#888888] text-xs font-mono mr-2 hidden sm:inline">{notice.create_time}</span>
-                        <ChevronRight size={14} className="text-[#555555] group-hover:text-[#A0A0A0] transition-colors" />
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                    {loadingNotices && noticePage > 1 && (
+                      <div className="flex justify-center py-3"><Loader2 size={16} className="animate-spin text-blue-500" /></div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -330,6 +315,23 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {selectedNotice && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 lg:p-6 animate-in fade-in duration-200">
+          <div className="bg-[#151618] border border-[#2B2D31] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-4 lg:px-6 py-4 border-b border-[#222326] shrink-0 bg-[#1C1D21] rounded-t-2xl">
+              <h3 className="text-base lg:text-lg font-bold text-[#EAEAEA] pr-4 truncate">{selectedNotice.title}</h3>
+              <button onClick={() => setSelectedNotice(null)} className="p-1.5 rounded-lg text-[#888888] hover:text-[#F87171] hover:bg-[#3F1D1D]/50 transition-colors"><X size={20} /></button>
+            </div>
+            <div className="px-4 lg:px-6 py-2 bg-[#111214] border-b border-[#222326] flex items-center text-[#888888] text-xs font-mono shrink-0">
+              <span>发布时间: {selectedNotice.inputTime || selectedNotice.create_time}</span>
+            </div>
+            <div className="p-4 lg:p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#111214] rounded-b-2xl min-h-0 touch-pan-y">
+              <div className="text-[#CCCCCC] text-sm leading-loose html-content-wrapper space-y-4" dangerouslySetInnerHTML={{ __html: selectedNotice.content || '<p>暂无详细内容</p>' }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
