@@ -1,0 +1,13 @@
+{
+  "compass": "E",
+  "windowSide": "N",
+  "bookshelfSide": "N",
+  "bookshelfBeginDirection": "W",
+  "bookshelfEndDirection": "E",
+  "bookshelves": [
+    { "name": "A01", "books": "马克思主义、列宁主义" },
+    { "name": "A02", "books": "哲学、宗教" },
+    { "name": "", "books": "" },
+    { "name": "A03", "books": "社会科学总论" }
+  ]
+}

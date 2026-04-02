@@ -1,17 +1,173 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, 
   LogOut, Bell, X, ChevronRight, Map, ChevronLeft, Loader2, 
-   Sun, CheckCircle2 
+  Sun, CheckCircle2, Library, AlertTriangle,
+  CheckIcon
 } from 'lucide-react';
 import api from '../utils/api';
 
+// Dashboard 静态地图预览引擎
+const DashboardSeatMapEngine = ({ 
+  layoutStr, 
+  mapInfo, 
+  mySeatNo,
+  showToast
+}: { 
+  layoutStr: string, 
+  mapInfo: any, 
+  mySeatNo: string,
+  showToast: (msg: string, type: 'success' | 'error' | 'info') => void
+}) => {
+  const rows = useMemo(() => layoutStr.split('\n'), [layoutStr]);
+
+  const boardPaddingStyle = useMemo(() => {
+    let pt = 64, pb = 64, pl = 64, pr = 64; 
+    const hasWindow = (s: string) => mapInfo?.windowSide === s;
+    const hasBookshelf = (s: string) => mapInfo?.bookshelfSide === s && mapInfo?.bookshelves?.length > 0;
+
+    const sides = ['N', 'S', 'E', 'W'];
+    sides.forEach(side => {
+      const w = hasWindow(side);
+      const b = hasBookshelf(side);
+      
+      let pad = 64; 
+      if (w && b) pad = 160;       
+      else if (b) pad = 120;       
+      else if (w) pad = 80;        
+
+      if (side === 'N' && mapInfo?.compass) pad = Math.max(pad, 80);
+      if (side === 'E' && mapInfo?.compass) pad = Math.max(pad, 80);
+
+      if (side === 'N') pt = pad;
+      if (side === 'S') pb = pad;
+      if (side === 'E') pr = pad;
+      if (side === 'W') pl = pad;
+    });
+
+    return { paddingTop: `${pt}px`, paddingBottom: `${pb}px`, paddingLeft: `${pl}px`, paddingRight: `${pr}px` };
+  }, [mapInfo]);
+
+  const getBookshelfContainerClass = (side: string, beginDir: string, endDir: string) => {
+    let cls = 'absolute z-20 ';
+    const isShared = mapInfo?.windowSide === side;
+    
+    if (side === 'N') cls += (isShared ? 'top-12 md:top-16 ' : 'top-4 md:top-8 ') + 'left-1/2 -translate-x-1/2 ';
+    if (side === 'S') cls += (isShared ? 'bottom-12 md:bottom-16 ' : 'bottom-4 md:bottom-8 ') + 'left-1/2 -translate-x-1/2 ';
+    if (side === 'E') cls += (isShared ? 'right-12 md:right-16 ' : 'right-4 md:right-8 ') + 'top-1/2 -translate-y-1/2 ';
+    if (side === 'W') cls += (isShared ? 'left-12 md:left-16 ' : 'left-4 md:left-8 ') + 'top-1/2 -translate-y-1/2 ';
+
+    if (beginDir === 'W' && endDir === 'E') cls += 'flex flex-row space-x-3';
+    else if (beginDir === 'E' && endDir === 'W') cls += 'flex flex-row-reverse space-x-3 space-x-reverse';
+    else if (beginDir === 'N' && endDir === 'S') cls += 'flex flex-col space-y-3';
+    else if (beginDir === 'S' && endDir === 'N') cls += 'flex flex-col-reverse space-y-3 space-y-reverse';
+    else cls += 'flex flex-row space-x-3'; 
+
+    return cls;
+  };
+
+  const getBookshelfShapeClass = (side: string) => {
+    if (side === 'N' || side === 'S') return 'w-5 h-16 md:w-6 md:h-20'; 
+    return 'w-16 h-5 md:w-20 md:h-6'; 
+  };
+
+  return (
+    <div className="absolute inset-0 overflow-auto custom-scrollbar touch-pan-x touch-pan-y">
+      <div className="w-max min-w-full min-h-full p-8 md:p-12 flex pb-12">
+        <div 
+          className="relative bg-[#111214] border border-[#2B2D31] rounded-2xl shadow-2xl transition-all duration-300 m-auto"
+          style={boardPaddingStyle}
+        >
+          {mapInfo?.compass && (
+            <div className="absolute top-8 md:top-10 right-10 md:right-12 flex flex-col items-center text-[#555555] font-bold select-none">
+              <span className="text-[12px] leading-none mb-0.5">{mapInfo.compass}</span>
+              <span className="text-[16px] leading-none">▲</span>
+            </div>
+          )}
+          
+          {mapInfo?.windowSide && (
+            <div className={`absolute flex items-center text-[#555555] font-bold tracking-widest select-none opacity-80 z-10
+              ${mapInfo.windowSide === 'N' ? 'top-6 md:top-8 left-1/2 -translate-x-1/2' : ''}
+              ${mapInfo.windowSide === 'S' ? 'bottom-6 md:bottom-8 left-1/2 -translate-x-1/2' : ''}
+              ${mapInfo.windowSide === 'W' ? 'left-6 md:left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center' : ''}
+              ${mapInfo.windowSide === 'E' ? 'right-6 md:right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center' : ''}
+            `}>
+              <div className="w-8 md:w-12 h-px bg-[#333] mr-3" />
+              <span className="text-[10px] md:text-xs whitespace-nowrap">🪟 靠窗侧</span>
+              <div className="w-8 md:w-12 h-px bg-[#333] ml-3" />
+            </div>
+          )}
+
+          {mapInfo?.bookshelfSide && mapInfo?.bookshelves?.length > 0 && (
+            <div className={getBookshelfContainerClass(mapInfo.bookshelfSide, mapInfo.bookshelfBeginDirection, mapInfo.bookshelfEndDirection)}>
+              {mapInfo.bookshelves.map((shelf: any, idx: number) => {
+                if (!shelf.books) return <div key={idx} className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)}`} />;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => showToast(`【${shelf.name}】 ${shelf.books}`, 'info')}
+                    className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)} bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/60 transition-all flex items-center justify-center cursor-pointer rounded-xs group`}
+                    title={`${shelf.name}: ${shelf.books}`}
+                  >
+                    <div className="w-full h-full flex items-center justify-center opacity-20 group-hover:opacity-40">
+                      <Library size={12} className="text-yellow-500" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex flex-col items-center justify-center space-y-1 relative z-30">
+            {rows.map((row, rIdx) => {
+              const tokens = row.match(/(\[[a-zA-Z0-9_]+\]|\||\s+)/g);
+              if (!tokens || tokens.length === 0 || row.trim() === '') {
+                return <div key={rIdx} className="h-6 md:h-8" />; 
+              }
+
+              return (
+                <div key={rIdx} className="flex items-center">
+                  {tokens.map((token, cIdx) => {
+                    if (token === '|') return <div key={cIdx} className="w-3 h-10 bg-[#3F2E23] border-x border-[#2A1E16] z-10 shadow-sm rounded-[1px]" />;
+                    if (token.trim() === '') return <div key={cIdx} style={{ width: `${token.length * 12}px` }} />;
+                    
+                    if (token.startsWith('[')) {
+                      const seatNo = token.slice(1, -1);
+                      const isMySeat = mySeatNo === seatNo;
+                      
+                      const bgClass = isMySeat 
+                        ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20 scale-105'
+                        : 'bg-[#222326] border-[#333333] text-[#555555]';
+
+                      return (
+                        <div
+                          key={cIdx}
+                          className={`relative w-11 h-8 md:w-11.5 md:h-8.5 mx-1 rounded-md border flex flex-col items-center justify-center outline-none select-none cursor-default ${bgClass}`}
+                        >
+                          {isMySeat && <div className="absolute -top-1.5 -right-1.5 bg-white w-4 h-4 rounded-full flex items-center justify-center shadow-md border border-gray-100 z-10"><CheckIcon size={10} className="text-blue-600" strokeWidth={4} /></div>}
+                          <span className="text-[10px] md:text-[11px] font-mono font-extrabold tracking-tighter">{seatNo.slice(-3)}</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Dashboard() {
+  const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' | 'info' } | null>(null);
+
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedRes, setSelectedRes] = useState<any | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // 灯光亮度临时状态
   const [brightness, setBrightness] = useState<Record<string, number>>({});
 
   const [notices, setNotices] = useState<any[]>([]);
@@ -19,10 +175,20 @@ export default function Dashboard() {
   const [hasMoreNotices, setHasMoreNotices] = useState(true);
   const [loadingNotices, setLoadingNotices] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
+  
   const [roomDict, setRoomDict] = useState<Record<string, any>>({});
   const [seatDict, setSeatDict] = useState<Record<string, any>>({});
   const [isDictLoaded, setIsDictLoaded] = useState(false);
   const [showFloorPlan, setShowFloorPlan] = useState(false);
+
+  const [mapLayoutStr, setMapLayoutStr] = useState<string>('');
+  const [mapInfo, setMapInfo] = useState<any>(null);
+  const [loadingMap, setLoadingMap] = useState(false);
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), type === 'info' ? 3000 : 2000);
+  };
 
   useEffect(() => {
     fetchData();
@@ -30,13 +196,47 @@ export default function Dashboard() {
     loadLocalDictionaries();
   }, []);
 
+  useEffect(() => {
+    const loadMapData = async () => {
+      if (!selectedRes || Number(selectedRes.type) !== 1) {
+        setMapLayoutStr('');
+        setMapInfo(null);
+        return;
+      }
+      
+      const areaId = selectedRes.area_id?.toString();
+      const path = seatDict[areaId]?.path;
+      
+      if (path) {
+        setLoadingMap(true);
+        try {
+          const [txtRes, infoRes] = await Promise.allSettled([
+            fetch(`/${path}/seat.txt`).then(r => r.ok ? r.text() : Promise.reject()),
+            fetch(`/${path}/info.json`).then(r => r.ok ? r.json() : Promise.reject())
+          ]);
+          setMapLayoutStr(txtRes.status === 'fulfilled' ? txtRes.value : '');
+          setMapInfo(infoRes.status === 'fulfilled' ? infoRes.value : null);
+        } catch (e) {
+          setMapLayoutStr('');
+          setMapInfo(null);
+        } finally {
+          setLoadingMap(false);
+        }
+      } else {
+        setMapLayoutStr('');
+        setMapInfo(null);
+      }
+    };
+    
+    loadMapData();
+  }, [selectedRes, seatDict]);
+
   const fetchData = async () => {
     try {
       const rsvRes = await api.get('/reservations');
       const data = Array.isArray(rsvRes.data) ? rsvRes.data : [];
       setReservations(data);
       
-      // 同步初始化亮度
       const brightMap: Record<string, number> = {};
       data.forEach((res: any) => { 
         brightMap[res.id] = parseInt(res.brightness || "0"); 
@@ -50,8 +250,17 @@ export default function Dashboard() {
   };
 
   const handleSeatControl = async (e: React.MouseEvent | null, res: any, action: 'leave' | 'return' | 'checkout' | 'power' | 'light', extra?: any) => {
-    // 【关键修复】：阻止点击控制按钮时触发父容器的选中/侧边栏打开逻辑
     if (e) e.stopPropagation();
+
+    // 二次确认逻辑 (灯光、电源由于有直观的状态切换，一般不需要确认)
+    let actionLabel = '';
+    if (action === 'leave') actionLabel = '临时离开';
+    if (action === 'return') actionLabel = '返回签到';
+    if (action === 'checkout') actionLabel = '完全离开';
+
+    if (actionLabel) {
+      if (!window.confirm(`确定要执行 [${actionLabel}] 操作吗？`)) return;
+    }
 
     const cancelReq = { id: res.id.toString(), type: Number(res.type) };
     try {
@@ -68,19 +277,18 @@ export default function Dashboard() {
       if (response?.data?.code === 1 || response?.data?.code === 0) {
         if (['leave', 'return', 'checkout', 'power', 'light'].includes(action)) {
           if (action === 'checkout' && selectedRes?.id === res.id) setSelectedRes(null);
-          // 操作成功后立即刷新数据以更新 UI 状态
           fetchData();
+          if (response.data.msg) showToast(response.data.msg, 'success');
         }
       } else {
-        alert(response?.data?.msg || "操作失败");
+        showToast(response?.data?.msg || "操作失败", 'error');
       }
     } catch (err: any) {
-      alert("请求异常");
+      showToast("请求异常", 'error');
     }
   };
 
   const renderSeatAdvancedControls = (res: any) => {
-    // 只有 spaceStatus 为 "6" (使用中) 且类型为座位(1)时显示
     if (res.spaceStatus !== "6" || Number(res.type) !== 1) return null;
 
     const showLight = res.hasLight === "1";
@@ -94,7 +302,6 @@ export default function Dashboard() {
       <div className="mt-4 pt-4 border-t border-dashed border-[#333333] space-y-4">
         <div className="flex flex-col space-y-4">
           <div className="flex items-center space-x-6">
-            {/* 电源开关拨钮 */}
             {showRelay && (
               <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-[#888888] text-[12px]">电源</span>
@@ -107,7 +314,6 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* 灯光开关拨钮 */}
             {showLight && (
               <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-[#888888] text-[12px]">灯</span>
@@ -121,7 +327,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* 亮度调节滑动条 */}
           {showLight && (
             <div className="w-full" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-1.5">
@@ -177,16 +382,17 @@ export default function Dashboard() {
     return null;
   };
 
-  // 其余 notices 处理、辅助函数逻辑保持不变...
   const handleAction = async (e: React.MouseEvent, res: any, actionName: string) => {
     e.stopPropagation(); 
-    if (!confirm(`确定要执行 [${actionName}] 操作吗？`)) return;
+    if (!window.confirm(`确定要执行 [${actionName}] 操作吗？`)) return;
     try {
       if (actionName === '取消预约') await api.post('/cancel', { id: res.id.toString(), type: Number(res.type) });
-      alert(`${actionName} 成功`);
+      showToast(`${actionName} 成功`, 'success');
       if (selectedRes?.id === res.id) setSelectedRes(null);
       fetchData(); 
-    } catch (err: any) { alert(`${actionName} 失败`); }
+    } catch (err: any) { 
+      showToast(`${actionName} 失败`, 'error'); 
+    }
   };
 
   const formatTimeRange = (begin?: string, end?: string) => {
@@ -240,7 +446,7 @@ export default function Dashboard() {
     try {
       const res = await api.post('/noticeDetail', { id });
       if (res.data?.data) setSelectedNotice(res.data.data);
-    } catch (err) { alert("无法加载公告内容"); }
+    } catch (err) { showToast("无法加载公告内容", 'error'); }
   };
 
   const loadLocalDictionaries = async () => {
@@ -270,6 +476,19 @@ export default function Dashboard() {
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #f59e0b; cursor: pointer; border: 3px solid #151618; margin-top: -4px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #222326; border-radius: 4px; border: 1px solid #333; }
       `}</style>
+
+      {/* ================= 全局 Toast ================= */}
+      {toast && (
+        <div className={`absolute top-20 left-1/2 -translate-x-1/2 z-100 px-6 py-3 rounded-full flex items-center shadow-2xl animate-in fade-in slide-in-from-top-4 w-11/12 md:w-auto text-center justify-center ${
+          toast.type === 'success' ? 'bg-emerald-500/20 border border-emerald-500 text-emerald-400' : 
+          toast.type === 'info' ? 'bg-[#2B2D31]/90 backdrop-blur border border-[#444444] text-[#EAEAEA]' :
+          'bg-red-500/20 border border-red-500 text-red-400'
+        }`}>
+          {toast.type === 'error' && <AlertTriangle size={18} className="mr-2 shrink-0" />}
+          {toast.type === 'info' && <Library size={18} className="mr-2 text-amber-500 shrink-0" />}
+          <span className="text-sm font-bold truncate max-w-62.5 sm:max-w-md">{toast.msg}</span>
+        </div>
+      )}
 
       {/* 左栏 */}
       <div className="w-full lg:w-110 border-r border-[#222326] flex flex-col bg-[#111214] shrink-0 h-full">
@@ -325,7 +544,7 @@ export default function Dashboard() {
                   
                   {Number(res.type) === 2 && <div className="mb-3">
                      <span className={`text-[11px] font-medium px-2 py-1 rounded bg-[#2B2D31] text-[#A0A0A0]`}>
-                       场馆方位: {roomDict[res.area_id]?.location || '未知位置'}
+                       场馆方位: {roomDict[res.area_id]?.location || seatDict[res.area_id]?.location || '未知位置'}
                      </span>
                   </div>}
 
@@ -356,7 +575,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 右栏逻辑保持原样 */}
+      {/* 右栏逻辑 */}
       <div className={`
         absolute inset-0 z-40 lg:static lg:z-auto lg:flex-1 
         flex flex-col bg-[#0E0F11] 
@@ -384,15 +603,29 @@ export default function Dashboard() {
               )}
             </div>
             
-            <div className="flex-1 flex flex-col relative min-h-[50%]">
-              <div className="flex-1 overflow-auto p-4 flex items-center justify-center relative">
-                 <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                 {currentImageUrl ? (
+            <div className="flex-1 flex flex-col relative min-h-[50%] overflow-hidden">
+               {loadingMap ? (
+                 <div className="absolute inset-0 flex items-center justify-center text-[#555555]">
+                    <Loader2 className="animate-spin text-blue-500 mb-4" size={32}/>
+                 </div>
+               ) : mapLayoutStr ? (
+                 <DashboardSeatMapEngine 
+                   layoutStr={mapLayoutStr} 
+                   mapInfo={mapInfo} 
+                   mySeatNo={selectedRes?.spaceName} 
+                   showToast={showToast}
+                 />
+               ) : currentImageUrl ? (
+                 <div className="flex-1 overflow-auto p-4 flex items-center justify-center relative">
+                   <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
                    <img src={currentImageUrl} alt="Floor Plan" className="max-w-full max-h-full rounded-xl shadow-2xl border border-[#222326] object-contain relative z-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; e.currentTarget.parentElement?.classList.add('image-failed'); }} />
-                 ) : (
-                   <div className="flex flex-col items-center text-[#555555] relative z-10"><ImageIcon size={64} className="mb-4 opacity-50" strokeWidth={1} /><p className="text-sm font-medium">暂无平面图</p></div>
-                 )}
-              </div>
+                 </div>
+               ) : (
+                 <div className="flex-1 flex flex-col items-center justify-center text-[#555555] relative z-10">
+                   <ImageIcon size={64} className="mb-4 opacity-50" strokeWidth={1} />
+                   <p className="text-sm font-medium">暂无平面图</p>
+                 </div>
+               )}
             </div>
 
             <div className="h-auto lg:h-80 flex border-t border-[#222326] bg-[#111214] flex-col shrink-0 min-h-0 flex-1 lg:flex-none">
@@ -433,6 +666,7 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* 公告详情弹窗 */}
       {selectedNotice && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 lg:p-6 animate-in fade-in duration-200">
           <div className="bg-[#151618] border border-[#2B2D31] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200">
