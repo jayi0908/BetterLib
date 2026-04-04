@@ -4,7 +4,7 @@ from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import Optional, List
 import json
-from .core import LibCore
+from .core import LibCore, process_universal_proxy
 
 app = FastAPI(
     title="ZJU Library API", 
@@ -19,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],  # 允许所有请求头
 )
 
-# 定义 API Key Header (Swagger 也可以识别)
 api_key_header = APIKeyHeader(name="authorization", auto_error=False)
 
 class LoginRequest(BaseModel):
@@ -178,6 +177,22 @@ async def book_room(req: BookRoomRequest, lib: LibCore = Depends(get_lib_core)):
         is_open=req.open,
         teamusers=req.teamusers
     )
+
+@app.api_route("/proxy/{target_url:path}", methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"])
+async def universal_proxy_endpoint(target_url: str, request: Request):
+    return await process_universal_proxy(target_url, request)
+
+@app.api_route("/searchbook/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def fallback_searchbook(path: str, request: Request):
+    return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/searchbook/{path}", request)
+
+@app.api_route("/data/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def fallback_data(path: str, request: Request):
+    return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/data/{path}", request)
+
+@app.api_route("/scripts/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def fallback_scripts(path: str, request: Request):
+    return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/scripts/{path}", request)
 
 if __name__ == "__main__":
     import uvicorn

@@ -66,6 +66,7 @@ export default function MainLayout() {
     { path: '/', label: '首页', icon: <Home size={20} className="md:w-4.5 md:h-4.5" /> },
     { path: '/seats', label: '座位预约', icon: <Armchair size={20} className="md:w-4.5 md:h-4.5" /> },
     { path: '/rooms', label: '空间预约', icon: <LibraryBig size={20} className="md:w-4.5 md:h-4.5" /> },
+    { path: '/books', label: '书目检索', icon: <BookOpen size={20} className="md:w-4.5 md:h-4.5" /> },
   ];
 
   return (

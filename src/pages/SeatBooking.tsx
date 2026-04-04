@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, Check, Loader2, AlertTriangle, Map as MapIcon, List as ListIcon, Armchair, Calendar, Library } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { ChevronLeft, Check, Loader2, AlertTriangle, Map as MapIcon, List as ListIcon, Armchair, Calendar, Library, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import api from '../utils/api';
 
 // 动态地图渲染引擎
@@ -25,10 +25,25 @@ const SeatMapEngine = ({
   }, [seats]);
 
   const rows = useMemo(() => layoutStr.split('\n'), [layoutStr]);
+  const [scale, setScale] = useState(1);
 
-  // 动态计算画板的内边距，告别四周巨大的空白
+  // 获取滚动容器的 ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 自动计算并居中滚动条
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const el = scrollContainerRef.current;
+      // 使用 setTimeout 确保 DOM 尺寸渲染完毕后再进行计算
+      setTimeout(() => {
+        el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
+        el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+      }, 50);
+    }
+  }, [layoutStr, scale]); // 依赖中加入 scale，确保每次缩放都保持居中
+
   const boardPaddingStyle = useMemo(() => {
-    let pt = 64, pb = 64, pl = 64, pr = 64; // 基础边距 64px
+    let pt = 64, pb = 64, pl = 64, pr = 64; 
 
     const hasWindow = (s: string) => mapInfo?.windowSide === s;
     const hasBookshelf = (s: string) => mapInfo?.bookshelfSide === s && mapInfo?.bookshelves?.length > 0;
@@ -39,11 +54,10 @@ const SeatMapEngine = ({
       const b = hasBookshelf(side);
       
       let pad = 64; 
-      if (w && b) pad = 160;       // 两者都在同一侧，留出 160px
-      else if (b) pad = 120;       // 只有书架，留出 120px
-      else if (w) pad = 80;        // 只有窗户，留出 80px
+      if (w && b) pad = 160;       
+      else if (b) pad = 120;       
+      else if (w) pad = 80;        
 
-      // 指南针强制需要 Top 和 Right 空间
       if (side === 'N' && mapInfo?.compass) pad = Math.max(pad, 80);
       if (side === 'E' && mapInfo?.compass) pad = Math.max(pad, 80);
 
@@ -61,10 +75,8 @@ const SeatMapEngine = ({
     };
   }, [mapInfo]);
 
-  // 动态定位书架并处理重叠
   const getBookshelfContainerClass = (side: string, beginDir: string, endDir: string) => {
     let cls = 'absolute z-20 ';
-    // 检查是否和窗户在同一侧，如果是，书架向内退进防止重叠
     const isShared = mapInfo?.windowSide === side;
     
     if (side === 'N') cls += (isShared ? 'top-12 md:top-16 ' : 'top-4 md:top-8 ') + 'left-1/2 -translate-x-1/2 ';
@@ -72,7 +84,6 @@ const SeatMapEngine = ({
     if (side === 'E') cls += (isShared ? 'right-12 md:right-16 ' : 'right-4 md:right-8 ') + 'top-1/2 -translate-y-1/2 ';
     if (side === 'W') cls += (isShared ? 'left-12 md:left-16 ' : 'left-4 md:left-8 ') + 'top-1/2 -translate-y-1/2 ';
 
-    // 排布方向计算
     if (beginDir === 'W' && endDir === 'E') cls += 'flex flex-row space-x-3';
     else if (beginDir === 'E' && endDir === 'W') cls += 'flex flex-row-reverse space-x-3 space-x-reverse';
     else if (beginDir === 'N' && endDir === 'S') cls += 'flex flex-col space-y-3';
@@ -88,115 +99,148 @@ const SeatMapEngine = ({
   };
 
   return (
-    <div className="absolute inset-0 overflow-auto custom-scrollbar touch-pan-x touch-pan-y">
+  <div className="relative w-full h-full overflow-hidden">
+    <div 
+      ref={scrollContainerRef} // 绑定 ref 以便控制滚动条
+      className="absolute inset-0 overflow-auto custom-scrollbar touch-pan-x touch-pan-y"
+    >
       <div className="w-max min-w-full min-h-full p-12 md:p-20 flex pb-40">
-        
-        {/* 使用动态 boardPaddingStyle */}
         <div 
-          className="relative bg-[#111214] border border-[#2B2D31] rounded-2xl shadow-2xl transition-all duration-300 m-auto"
-          style={boardPaddingStyle}
+          className="m-auto transition-transform duration-200 ease-out origin-center"
+          style={{ transform: `scale(${scale})` }}
         >
-          
-          {/* ========== 1. 方位标 ========== */}
-          {mapInfo?.compass && (
-            <div className="absolute top-8 md:top-10 right-10 md:right-12 flex flex-col items-center text-[#555555] font-bold select-none">
-              <span className="text-[12px] leading-none mb-0.5">{mapInfo.compass}</span>
-              <span className="text-[16px] leading-none">▲</span>
-            </div>
-          )}
-          
-          {/* ========== 2. 靠窗区域 (永远贴着最外层边缘) ========== */}
-          {mapInfo?.windowSide && (
-            <div className={`absolute flex items-center text-[#555555] font-bold tracking-widest select-none opacity-80 z-10
-              ${mapInfo.windowSide === 'N' ? 'top-6 md:top-8 left-1/2 -translate-x-1/2' : ''}
-              ${mapInfo.windowSide === 'S' ? 'bottom-6 md:bottom-8 left-1/2 -translate-x-1/2' : ''}
-              ${mapInfo.windowSide === 'W' ? 'left-6 md:left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center' : ''}
-              ${mapInfo.windowSide === 'E' ? 'right-6 md:right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center' : ''}
-            `}>
-              <div className="w-8 md:w-12 h-px bg-[#333] mr-3" />
-              <span className="text-[10px] md:text-xs whitespace-nowrap">🪟 靠窗侧</span>
-              <div className="w-8 md:w-12 h-px bg-[#333] ml-3" />
-            </div>
-          )}
+          <div 
+            className="relative bg-[#111214] border border-[#2B2D31] rounded-2xl shadow-2xl transition-all duration-300 m-auto"
+            style={boardPaddingStyle}
+          >
 
-          {/* ========== 3. 黄色书架排布 ========== */}
-          {mapInfo?.bookshelfSide && mapInfo?.bookshelves?.length > 0 && (
-            <div className={getBookshelfContainerClass(mapInfo.bookshelfSide, mapInfo.bookshelfBeginDirection, mapInfo.bookshelfEndDirection)}>
-              {mapInfo.bookshelves.map((shelf: any, idx: number) => {
-                if (!shelf.books) {
-                  return <div key={idx} className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)}`} />;
+            {/* ========== 1. 方位标 ========== */}
+            {mapInfo?.compass && (
+              <div className="absolute top-8 md:top-10 right-10 md:right-12 flex flex-col items-center text-[#555555] font-bold select-none">
+                <span className="text-[12px] leading-none mb-0.5">{mapInfo.compass}</span>
+                <span className="text-[16px] leading-none">▲</span>
+              </div>
+            )}
+
+            {/* ========== 2. 靠窗区域 ========== */}
+            {mapInfo?.windowSide && (
+              <div className={`absolute flex items-center text-[#555555] font-bold tracking-widest select-none opacity-80 z-10
+                ${mapInfo.windowSide === 'N' ? 'top-6 md:top-8 left-1/2 -translate-x-1/2' : ''}
+                ${mapInfo.windowSide === 'S' ? 'bottom-6 md:bottom-8 left-1/2 -translate-x-1/2' : ''}
+                ${mapInfo.windowSide === 'W' ? 'left-6 md:left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center' : ''}
+                ${mapInfo.windowSide === 'E' ? 'right-6 md:right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center' : ''}
+              `}>
+                <div className="w-8 md:w-12 h-px bg-[#333] mr-3" />
+                <span className="text-[10px] md:text-xs whitespace-nowrap">🪟 靠窗侧</span>
+                <div className="w-8 md:w-12 h-px bg-[#333] ml-3" />
+              </div>
+            )}
+
+            {/* ========== 3. 黄色书架排布 ========== */}
+            {mapInfo?.bookshelfSide && mapInfo?.bookshelves?.length > 0 && (
+              <div className={getBookshelfContainerClass(mapInfo.bookshelfSide, mapInfo.bookshelfBeginDirection, mapInfo.bookshelfEndDirection)}>
+                {mapInfo.bookshelves.map((shelf: any, idx: number) => {
+                  if (!shelf.books) {
+                    return <div key={idx} className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)}`} />;
+                  }
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => showToast(`【${shelf.name}】 ${shelf.books}`, 'info')}
+                      className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)} bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/60 hover:shadow-[0_0_12px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center cursor-pointer rounded-xs group`}
+                      title={`${shelf.name}: ${shelf.books}`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Library size={12} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ========== 4. 矩阵座位渲染 ========== */}
+            <div className="flex flex-col items-start justify-center space-y-1 relative z-30">
+              {rows.map((row, rIdx) => {
+                const tokens = row.match(/(\[[a-zA-Z0-9_]+\]|\||\s+)/g);
+                if (!tokens || tokens.length === 0 || row.trim() === '') {
+                  return <div key={rIdx} className="h-6 md:h-8" />; 
                 }
+
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => showToast(`【${shelf.name}】 ${shelf.books}`, 'info')}
-                    className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)} bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/60 hover:shadow-[0_0_12px_rgba(234,179,8,0.2)] transition-all flex items-center justify-center cursor-pointer rounded-xs group`}
-                    title={`${shelf.name}: ${shelf.books}`}
-                  >
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Library size={12} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
-                    </div>
-                  </button>
+                  <div key={rIdx} className="flex items-center">
+                    {tokens.map((token, cIdx) => {
+                      if (token === '|') return <div key={cIdx} className="w-3 h-10 bg-[#3F2E23] border-x border-[#2A1E16] z-10 shadow-sm rounded-[1px]" />;
+                      if (token.trim() === '') return <div key={cIdx} style={{ width: `${token.length * 12}px` }} />;
+                      if (token.startsWith('[')) {
+                        const seatNo = token.slice(1, -1);
+                        const seat = seatDict[seatNo];
+
+                        const isAvailable = seat ? seat.status === '1' : false;
+                        const isSelected = selectedSeat?.id === seat?.id;
+
+                        let bgClass = 'bg-[#1C1D21] border-[#333333] text-[#444]'; 
+                        if (seat) {
+                          if (isSelected) bgClass = 'bg-blue-500 border-blue-400 text-white shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20 scale-105';
+                          else {
+                            switch (seat.status) {
+                              case '1': bgClass = 'bg-white border-gray-200 text-black hover:border-blue-400 hover:shadow-sm'; break;
+                              case '6': bgClass = 'bg-blue-600 border-blue-500 text-white opacity-90'; break;
+                              case '7': bgClass = 'bg-emerald-600 border-emerald-500 text-white opacity-90'; break;
+                              case '2': bgClass = 'bg-red-600 border-red-500 text-white opacity-90'; break;
+                              case '8': default: bgClass = 'bg-[#222326] border-[#333333] text-[#555555]'; break;
+                            }
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={cIdx}
+                            disabled={!isAvailable}
+                            onClick={() => seat && isAvailable && onSelect(seat)}
+                            className={`relative w-11 h-8 md:w-11.5 md:h-8.5 mx-1 rounded-md border flex flex-col items-center justify-center transition-all duration-150 outline-none select-none ${bgClass} ${isAvailable ? 'cursor-pointer active:scale-95' : 'cursor-not-allowed opacity-80'}`}
+                          >
+                            {isSelected && <div className="absolute -top-1.5 -right-1.5 bg-white w-4 h-4 rounded-full flex items-center justify-center shadow-md border border-gray-100 z-10"><Check size={10} className="text-blue-600" strokeWidth={4} /></div>}
+                            <span className="text-[10px] md:text-[11px] font-mono font-extrabold tracking-tighter">{seatNo.slice(-3)}</span>
+                          </button>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
                 );
               })}
             </div>
-          )}
-
-          {/* ========== 4. 矩阵座位渲染 ========== */}
-          <div className="flex flex-col items-center justify-center space-y-1 relative z-30">
-            {rows.map((row, rIdx) => {
-              const tokens = row.match(/(\[[a-zA-Z0-9_]+\]|\||\s+)/g);
-              if (!tokens || tokens.length === 0 || row.trim() === '') {
-                return <div key={rIdx} className="h-6 md:h-8" />; 
-              }
-
-              return (
-                <div key={rIdx} className="flex items-center">
-                  {tokens.map((token, cIdx) => {
-                    if (token === '|') return <div key={cIdx} className="w-3 h-10 bg-[#3F2E23] border-x border-[#2A1E16] z-10 shadow-sm rounded-[1px]" />;
-                    if (token.trim() === '') return <div key={cIdx} style={{ width: `${token.length * 12}px` }} />;
-                    if (token.startsWith('[')) {
-                      const seatNo = token.slice(1, -1);
-                      const seat = seatDict[seatNo];
-                      
-                      const isAvailable = seat ? seat.status === '1' : false;
-                      const isSelected = selectedSeat?.id === seat?.id;
-                      
-                      let bgClass = 'bg-[#1C1D21] border-[#333333] text-[#444]'; 
-                      if (seat) {
-                        if (isSelected) bgClass = 'bg-blue-500 border-blue-400 text-white shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20 scale-105';
-                        else {
-                          switch (seat.status) {
-                            case '1': bgClass = 'bg-white border-gray-200 text-black hover:border-blue-400 hover:shadow-sm'; break;
-                            case '6': bgClass = 'bg-blue-600 border-blue-500 text-white opacity-90'; break;
-                            case '7': bgClass = 'bg-emerald-600 border-emerald-500 text-white opacity-90'; break;
-                            case '2': bgClass = 'bg-red-600 border-red-500 text-white opacity-90'; break;
-                            case '8': default: bgClass = 'bg-[#222326] border-[#333333] text-[#555555]'; break;
-                          }
-                        }
-                      }
-
-                      return (
-                        <button
-                          key={cIdx}
-                          disabled={!isAvailable}
-                          onClick={() => seat && isAvailable && onSelect(seat)}
-                          className={`relative w-11 h-8 md:w-11.5 md:h-8.5 mx-1 rounded-md border flex flex-col items-center justify-center transition-all duration-150 outline-none select-none ${bgClass} ${isAvailable ? 'cursor-pointer active:scale-95' : 'cursor-not-allowed opacity-80'}`}
-                        >
-                          {isSelected && <div className="absolute -top-1.5 -right-1.5 bg-white w-4 h-4 rounded-full flex items-center justify-center shadow-md border border-gray-100 z-10"><Check size={10} className="text-blue-600" strokeWidth={4} /></div>}
-                          <span className="text-[10px] md:text-[11px] font-mono font-extrabold tracking-tighter">{seatNo.slice(-3)}</span>
-                        </button>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              );
-            })}
           </div>
         </div>
       </div>
     </div>
+
+    {/* 【核心修复 1】：将 bottom-6 调整为 bottom-24 lg:bottom-28，彻底避开底部操作栏的遮挡 */}
+    <div className="absolute bottom-24 right-4 lg:bottom-28 lg:right-10 flex flex-col bg-[#1C1D21] border border-[#2B2D31] rounded-xl shadow-xl z-50 overflow-hidden text-[#A0A0A0]">
+      <button 
+        onClick={() => setScale(s => Math.min(s + 0.2, 2.5))} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors border-b border-[#2B2D31] flex items-center justify-center"
+        title="放大"
+      >
+        <ZoomIn size={18} />
+      </button>
+      <button 
+        onClick={() => setScale(1)} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors border-b border-[#2B2D31] flex items-center justify-center"
+        title="重置缩放"
+      >
+        <Maximize size={18} />
+      </button>
+      <button 
+        onClick={() => setScale(s => Math.max(s - 0.2, 0.4))} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors flex items-center justify-center"
+        title="缩小"
+      >
+        <ZoomOut size={18} />
+      </button>
+    </div>
+  </div>
   );
 };
 

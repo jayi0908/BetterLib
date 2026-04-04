@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   MapPin, Clock, TicketX, Image as ImageIcon, Calendar, Armchair, Coffee, 
   LogOut, Bell, X, ChevronRight, Map, ChevronLeft, Loader2, 
   Sun, CheckCircle2, Library, AlertTriangle,
-  CheckIcon
+  Check as CheckIcon, ZoomIn, ZoomOut, Maximize
 } from 'lucide-react';
 import api from '../utils/api';
 
@@ -20,6 +20,28 @@ const DashboardSeatMapEngine = ({
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void
 }) => {
   const rows = useMemo(() => layoutStr.split('\n'), [layoutStr]);
+  const [scale, setScale] = useState(1);
+
+  // 【核心修复】：添加滚动容器引用，用于地图加载和缩放时自动居中
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const el = scrollContainerRef.current;
+      setTimeout(() => {
+        el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
+        el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+      }, 50);
+    }
+  }, [layoutStr, scale]);
+
+  const [ch, setCh] = useState(8);
+  useEffect(() => {
+    const updateCh = () => setCh(window.innerWidth < 768 ? 6.5 : 7.5);
+    updateCh();
+    window.addEventListener('resize', updateCh);
+    return () => window.removeEventListener('resize', updateCh);
+  }, []);
 
   const boardPaddingStyle = useMemo(() => {
     let pt = 64, pb = 64, pl = 64, pr = 64; 
@@ -72,92 +94,129 @@ const DashboardSeatMapEngine = ({
   };
 
   return (
-    <div className="absolute inset-0 overflow-auto custom-scrollbar touch-pan-x touch-pan-y">
-      <div className="w-max min-w-full min-h-full p-8 md:p-12 flex pb-12">
+  <div className="relative w-full h-full overflow-hidden">
+    <div 
+      ref={scrollContainerRef}
+      className="absolute inset-0 overflow-auto custom-scrollbar touch-pan-x touch-pan-y"
+    >
+      <div className="w-max min-w-full min-h-full p-12 md:p-20 flex pb-12">
         <div 
-          className="relative bg-[#111214] border border-[#2B2D31] rounded-2xl shadow-2xl transition-all duration-300 m-auto"
-          style={boardPaddingStyle}
+          className="m-auto transition-transform duration-200 ease-out origin-center"
+          style={{ transform: `scale(${scale})` }}
         >
-          {mapInfo?.compass && (
-            <div className="absolute top-8 md:top-10 right-10 md:right-12 flex flex-col items-center text-[#555555] font-bold select-none">
-              <span className="text-[12px] leading-none mb-0.5">{mapInfo.compass}</span>
-              <span className="text-[16px] leading-none">▲</span>
-            </div>
-          )}
-          
-          {mapInfo?.windowSide && (
-            <div className={`absolute flex items-center text-[#555555] font-bold tracking-widest select-none opacity-80 z-10
-              ${mapInfo.windowSide === 'N' ? 'top-6 md:top-8 left-1/2 -translate-x-1/2' : ''}
-              ${mapInfo.windowSide === 'S' ? 'bottom-6 md:bottom-8 left-1/2 -translate-x-1/2' : ''}
-              ${mapInfo.windowSide === 'W' ? 'left-6 md:left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center' : ''}
-              ${mapInfo.windowSide === 'E' ? 'right-6 md:right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center' : ''}
-            `}>
-              <div className="w-8 md:w-12 h-px bg-[#333] mr-3" />
-              <span className="text-[10px] md:text-xs whitespace-nowrap">🪟 靠窗侧</span>
-              <div className="w-8 md:w-12 h-px bg-[#333] ml-3" />
-            </div>
-          )}
+          <div 
+            className="relative bg-[#111214] border border-[#2B2D31] rounded-2xl shadow-2xl transition-all duration-300 m-auto"
+            style={boardPaddingStyle}
+          >
+            {mapInfo?.compass && (
+              <div className="absolute top-8 md:top-10 right-10 md:right-12 flex flex-col items-center text-[#555555] font-bold select-none">
+                <span className="text-[12px] leading-none mb-0.5">{mapInfo.compass}</span>
+                <span className="text-[16px] leading-none">▲</span>
+              </div>
+            )}
 
-          {mapInfo?.bookshelfSide && mapInfo?.bookshelves?.length > 0 && (
-            <div className={getBookshelfContainerClass(mapInfo.bookshelfSide, mapInfo.bookshelfBeginDirection, mapInfo.bookshelfEndDirection)}>
-              {mapInfo.bookshelves.map((shelf: any, idx: number) => {
-                if (!shelf.books) return <div key={idx} className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)}`} />;
+            {mapInfo?.windowSide && (
+              <div className={`absolute flex items-center text-[#555555] font-bold tracking-widest select-none opacity-80 z-10
+                ${mapInfo.windowSide === 'N' ? 'top-6 md:top-8 left-1/2 -translate-x-1/2' : ''}
+                ${mapInfo.windowSide === 'S' ? 'bottom-6 md:bottom-8 left-1/2 -translate-x-1/2' : ''}
+                ${mapInfo.windowSide === 'W' ? 'left-6 md:left-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center' : ''}
+                ${mapInfo.windowSide === 'E' ? 'right-6 md:right-8 top-1/2 -translate-y-1/2 rotate-90 origin-center' : ''}
+              `}>
+                <div className="w-8 md:w-12 h-px bg-[#333] mr-3" />
+                <span className="text-[10px] md:text-xs whitespace-nowrap">🪟 靠窗侧</span>
+                <div className="w-8 md:w-12 h-px bg-[#333] ml-3" />
+              </div>
+            )}
+
+            {mapInfo?.bookshelfSide && mapInfo?.bookshelves?.length > 0 && (
+              <div className={getBookshelfContainerClass(mapInfo.bookshelfSide, mapInfo.bookshelfBeginDirection, mapInfo.bookshelfEndDirection)}>
+                {mapInfo.bookshelves.map((shelf: any, idx: number) => {
+                  if (!shelf.books) return <div key={idx} className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)}`} />;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => showToast(`【${shelf.name}】 ${shelf.books}`, 'info')}
+                      className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)} bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/60 transition-all flex items-center justify-center cursor-pointer rounded-xs group`}
+                      title={`${shelf.name}: ${shelf.books}`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center opacity-20 group-hover:opacity-40">
+                        <Library size={12} className="text-yellow-500" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex flex-col items-start justify-center space-y-1 relative z-30 mx-auto w-max">
+              {rows.map((row, rIdx) => {
+                const tokens = row.match(/(\[[a-zA-Z0-9_]+\]|\||\s+)/g);
+                if (!tokens || tokens.length === 0 || row.trim() === '') {
+                  return <div key={rIdx} style={{ height: `${3 * ch}px` }} className="w-full shrink-0" />; 
+                }
+
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => showToast(`【${shelf.name}】 ${shelf.books}`, 'info')}
-                    className={`${getBookshelfShapeClass(mapInfo.bookshelfSide)} bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/60 transition-all flex items-center justify-center cursor-pointer rounded-xs group`}
-                    title={`${shelf.name}: ${shelf.books}`}
-                  >
-                    <div className="w-full h-full flex items-center justify-center opacity-20 group-hover:opacity-40">
-                      <Library size={12} className="text-yellow-500" />
-                    </div>
-                  </button>
+                  <div key={rIdx} className="flex items-center">
+                    {tokens.map((token, cIdx) => {
+                      if (token === '|') return <div key={cIdx} style={{ width: `${1 * ch}px` }} className="h-10 bg-[#3F2E23] border-x border-[#2A1E16] z-10 shadow-sm rounded-[1px] shrink-0" />;
+                      if (token.trim() === '') return <div key={cIdx} style={{ width: `${token.length * ch}px` }} className="shrink-0" />;
+
+                      if (token.startsWith('[')) {
+                        const seatNo = token.slice(1, -1);
+                        const isMySeat = mySeatNo === seatNo;
+
+                        const bgClass = isMySeat 
+                          ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20 scale-105'
+                          : 'bg-[#222326] border-[#333333] text-[#555555]';
+
+                        return (
+                          <div key={cIdx} style={{ width: `${8 * ch}px` }} className="flex justify-center shrink-0">
+                            <div
+                              style={{ width: `${8 * ch - 6}px` }}
+                              className={`relative h-8 md:h-8.5 rounded-md border flex flex-col items-center justify-center outline-none select-none cursor-default ${bgClass}`}
+                            >
+                              {isMySeat && <div className="absolute -top-1.5 -right-1.5 bg-white w-4 h-4 rounded-full flex items-center justify-center shadow-md border border-gray-100 z-10"><CheckIcon size={10} className="text-blue-600" strokeWidth={4} /></div>}
+                              <span className="text-[10px] md:text-[11px] font-mono font-extrabold tracking-tighter">{seatNo.slice(-3)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
                 );
               })}
             </div>
-          )}
-
-          <div className="flex flex-col items-center justify-center space-y-1 relative z-30">
-            {rows.map((row, rIdx) => {
-              const tokens = row.match(/(\[[a-zA-Z0-9_]+\]|\||\s+)/g);
-              if (!tokens || tokens.length === 0 || row.trim() === '') {
-                return <div key={rIdx} className="h-6 md:h-8" />; 
-              }
-
-              return (
-                <div key={rIdx} className="flex items-center">
-                  {tokens.map((token, cIdx) => {
-                    if (token === '|') return <div key={cIdx} className="w-3 h-10 bg-[#3F2E23] border-x border-[#2A1E16] z-10 shadow-sm rounded-[1px]" />;
-                    if (token.trim() === '') return <div key={cIdx} style={{ width: `${token.length * 12}px` }} />;
-                    
-                    if (token.startsWith('[')) {
-                      const seatNo = token.slice(1, -1);
-                      const isMySeat = mySeatNo === seatNo;
-                      
-                      const bgClass = isMySeat 
-                        ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_12px_rgba(59,130,246,0.5)] z-20 scale-105'
-                        : 'bg-[#222326] border-[#333333] text-[#555555]';
-
-                      return (
-                        <div
-                          key={cIdx}
-                          className={`relative w-11 h-8 md:w-11.5 md:h-8.5 mx-1 rounded-md border flex flex-col items-center justify-center outline-none select-none cursor-default ${bgClass}`}
-                        >
-                          {isMySeat && <div className="absolute -top-1.5 -right-1.5 bg-white w-4 h-4 rounded-full flex items-center justify-center shadow-md border border-gray-100 z-10"><CheckIcon size={10} className="text-blue-600" strokeWidth={4} /></div>}
-                          <span className="text-[10px] md:text-[11px] font-mono font-extrabold tracking-tighter">{seatNo.slice(-3)}</span>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              );
-            })}
           </div>
         </div>
       </div>
     </div>
+
+    {/* Dashboard 没有底部预约栏，所以 bottom-6 即可安全显示 */}
+    <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 flex flex-col bg-[#1C1D21] border border-[#2B2D31] rounded-xl shadow-xl z-50 overflow-hidden text-[#A0A0A0]">
+      <button 
+        onClick={() => setScale(s => Math.min(s + 0.2, 2.5))} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors border-b border-[#2B2D31] flex items-center justify-center"
+        title="放大"
+      >
+        <ZoomIn size={18} />
+      </button>
+      <button 
+        onClick={() => setScale(1)} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors border-b border-[#2B2D31] flex items-center justify-center"
+        title="重置缩放"
+      >
+        <Maximize size={18} />
+      </button>
+      <button 
+        onClick={() => setScale(s => Math.max(s - 0.2, 0.4))} 
+        className="p-3 hover:bg-[#2B2D31] hover:text-white transition-colors flex items-center justify-center"
+        title="缩小"
+      >
+        <ZoomOut size={18} />
+      </button>
+    </div>
+  </div>
   );
 };
 
@@ -252,7 +311,7 @@ export default function Dashboard() {
   const handleSeatControl = async (e: React.MouseEvent | null, res: any, action: 'leave' | 'return' | 'checkout' | 'power' | 'light', extra?: any) => {
     if (e) e.stopPropagation();
 
-    // 二次确认逻辑 (灯光、电源由于有直观的状态切换，一般不需要确认)
+    // 二次确认逻辑 (灯光、电源由于有直观的状态切换，无需繁琐确认)
     let actionLabel = '';
     if (action === 'leave') actionLabel = '临时离开';
     if (action === 'return') actionLabel = '返回签到';
@@ -356,7 +415,7 @@ export default function Dashboard() {
     const statusNum = res.spaceStatus;
 
     if (type === 2) {
-      if (res.statusname === '使用中') return <button onClick={(e) => handleSeatControl(e, res, 'checkout')} className="action-btn-danger"><LogOut size={14} className="mr-1.5" /> 结束使用</button>;
+      if (res.statusname === '使用中') return <button onClick={(e) => handleAction(e, res, '结束使用')} className="action-btn-danger"><LogOut size={14} className="mr-1.5" /> 结束使用</button>;
       else return <button onClick={(e) => handleAction(e, res, '取消预约')} className="action-btn-danger"><TicketX size={14} className="mr-1.5" /> 取消预约</button>;
     } 
     
