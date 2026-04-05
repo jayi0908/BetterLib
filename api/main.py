@@ -186,14 +186,6 @@ async def universal_proxy_endpoint(target_url: str, request: Request):
 async def fallback_searchbook(path: str, request: Request):
     return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/searchbook/{path}", request)
 
-@app.api_route("/data/{path:path}", methods=["GET", "POST", "OPTIONS"])
-async def fallback_data(path: str, request: Request):
-    return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/data/{path}", request)
-
-@app.api_route("/scripts/{path:path}", methods=["GET", "POST", "OPTIONS"])
-async def fallback_scripts(path: str, request: Request):
-    return await process_universal_proxy(f"http://bis.lib.zju.edu.cn:8003/scripts/{path}", request)
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
