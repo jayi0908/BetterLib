@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import Optional, List
-import json
-from .core import LibCore, process_universal_proxy
+import json, asyncio
+from .core import LibCore, process_universal_proxy, check_seat_status_background, USER_PUSH_CONFIGS, send_dingtalk_push
 
 app = FastAPI(
     title="ZJU Library API", 
@@ -62,6 +62,15 @@ class BookRoomRequest(BaseModel):
     open: str
     teamusers: str
 
+class PushConfigRequest(BaseModel):
+    user_id: str
+    webhook_url: str
+    cookie: str
+    push_delay: int = 0
+
+class TestPushRequest(BaseModel):
+    webhook_url: str
+
 def get_lib_core(auth_token: str = Security(api_key_header)):
     if not auth_token:
         raise HTTPException(status_code=401, detail="请求未携带有效的 Authorization Token。")
@@ -83,6 +92,35 @@ async def get_user(lib: LibCore = Depends(get_lib_core)):
     if not name:
         raise HTTPException(status_code=401, detail="Token已过期或在其他设备登录")
     return name
+
+@app.post("/api/settings/push")
+async def update_push_settings(config: PushConfigRequest):
+    # 记录用户的钉钉 Webhook 配置，并初始化跟踪计时器状态
+    USER_PUSH_CONFIGS[config.user_id] = {
+        "webhook_url": config.webhook_url,
+        "cookie": config.cookie,
+        "push_delay": config.push_delay,
+        "last_status": None,       
+        "leave_time": None,        
+        "has_pushed": False        
+    }
+    print(f"[*] 已更新用户 {config.user_id} 的推送配置 (延迟: {config.push_delay}分钟)")
+    return {"status": "success", "msg": "推送配置已更新"}
+
+@app.post("/api/settings/push/test")
+async def test_push_connection(req: TestPushRequest):
+    print(f"[*] 收到钉钉 Webhook 连通性测试请求")
+    await send_dingtalk_push(
+        webhook_url=req.webhook_url,
+        title="Ciallo~ (∠・ω< )⌒★",
+        content="您的钉钉群机器人已成功连接！"
+    )
+    return {"status": "success"}
+
+@app.on_event("startup")
+async def startup_event():
+    print("[*] 启动后台座位状态轮询守护线程...")
+    asyncio.create_task(check_seat_status_background())
 
 @app.post("/notices")
 async def get_notices(req: dict, lib: LibCore = Depends(get_lib_core)):

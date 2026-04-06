@@ -1,10 +1,12 @@
-import requests, re, base64, json, httpx, posixpath
+import requests, re, base64, json, httpx, posixpath, asyncio, time
 from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from urllib.parse import urlparse
 from fastapi import Request, Response
 from typing import Optional, List, Dict
 
+# 结构: {"学号": {"webhook_url": "https://oapi.dingtalk.com/...", "cookie": "xxx", "push_delay": 0, "last_status": "6", ...}}
+USER_PUSH_CONFIGS = {}
 LOCAL_PROXY_PREFIX = "https://libapi.jayi0908.cn/proxy"
 
 class LibCore:
@@ -395,3 +397,94 @@ async def process_universal_proxy(target_url: str, request: Request) -> Response
         return Response(content=text_content, status_code=resp.status_code, headers=response_headers)
 
     return Response(content=resp.content, status_code=resp.status_code, headers=response_headers)
+
+async def send_dingtalk_push(webhook_url: str, title: str, content: str):
+    """向钉钉群机器人发送通知"""
+    if not webhook_url:
+        return
+        
+    # 注意：这里的 content 必须包含我们在钉钉机器人里设置的【自定义关键词】
+    # 关键词设定为 "BetterLib提醒"
+    message_text = f"【BetterLib提醒】\n\n{title}\n\n{content}"
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(
+                webhook_url,
+                json={
+                    "msgtype": "text",
+                    "text": {
+                        "content": message_text
+                    }
+                },
+                timeout=10.0
+            )
+            print(f"[+] 钉钉推送成功: {title}")
+        except Exception as e:
+            print(f"[-] 钉钉推送失败: {e}")
+
+async def check_seat_status_background():
+    """死循环后台任务：处理多用户的延迟推送逻辑"""
+    while True:
+        current_time = time.time()
+        
+        for user_id, config in list(USER_PUSH_CONFIGS.items()):
+            webhook_url = config.get("webhook_url")
+            cookie = config.get("cookie")
+            delay_minutes = config.get("push_delay", 0)
+            
+            if not webhook_url or not cookie:
+                continue
+                
+            try:
+                # 替换为真实的查询 API 
+                api_url = "http://bis.lib.zju.edu.cn:8003/api/reservation/current" 
+                
+                async with httpx.AsyncClient() as client:
+                    resp = await client.get(
+                        api_url, 
+                        headers={"Cookie": cookie, "User-Agent": "Mozilla/5.0"},
+                        timeout=10.0
+                    )
+                    
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        current_status = str(data.get("spaceStatus", ""))
+                        
+                        last_status = config["last_status"]
+                        has_pushed = config["has_pushed"]
+                        leave_time = config["leave_time"]
+                        
+                        # 核心逻辑：时间轴判定
+                        if current_status == "7":
+                            if last_status != "7":
+                                # 刚刚切入到临时离开状态，开始计时！
+                                print(f"[*] 用户 {user_id} 刚刚离馆，开始倒计时 {delay_minutes} 分钟。")
+                                config["leave_time"] = current_time
+                                config["has_pushed"] = False
+                            else:
+                                # 已经处于离开状态，检查是否达到了延迟时间
+                                if not has_pushed and leave_time is not None:
+                                    elapsed_minutes = (current_time - leave_time) / 60
+                                    
+                                    if elapsed_minutes >= delay_minutes:
+                                        await send_dingtalk_push( 
+                                            webhook_url=webhook_url,
+                                            title="⚠️ 图书馆座位状态提醒",
+                                            content=f"同学您好，您的座位已离开超过 {delay_minutes} 分钟。\n请注意把握时间，以免违规。"
+                                        )
+                                        # 标记已推送，防止重复轰炸
+                                        config["has_pushed"] = True
+                        else:
+                            # 如果状态不是 7（回去了，或者预约结束了），清理计时器
+                            config["leave_time"] = None
+                            config["has_pushed"] = False
+                            
+                        # 更新上一轮状态
+                        config["last_status"] = current_status
+                        
+            except Exception as e:
+                print(f"[-] 获取用户 {user_id} 状态失败: {e}")
+                
+        # 每 60 秒轮询一次全局任务
+        await asyncio.sleep(60)
