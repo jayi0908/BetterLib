@@ -405,7 +405,7 @@ async def send_dingtalk_push(webhook_url: str, title: str, content: str):
         
     # 注意：这里的 content 必须包含我们在钉钉机器人里设置的【自定义关键词】
     # 关键词设定为 "BetterLib提醒"
-    message_text = f"【BetterLib提醒】\n\n{title}\n\n{content}"
+    message_text = f"【BetterLib提醒】{title}\n{content}"
     
     async with httpx.AsyncClient() as client:
         try:
@@ -437,52 +437,70 @@ async def check_seat_status_background():
                 continue
                 
             try:
-                # 替换为真实的查询 API 
-                api_url = "http://bis.lib.zju.edu.cn:8003/api/reservation/current" 
+                lib = LibCore(authorization=cookie)
+                if hasattr(asyncio, "to_thread"):
+                    reservations = await asyncio.to_thread(lib.get_reservations)
+                else:
+                    reservations = lib.get_reservations()
+                if isinstance(reservations, dict):
+                    reservations = reservations.get("data", [])
+                current_status = ""
                 
-                async with httpx.AsyncClient() as client:
-                    resp = await client.get(
-                        api_url, 
-                        headers={"Cookie": cookie, "User-Agent": "Mozilla/5.0"},
-                        timeout=10.0
-                    )
-                    
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        current_status = str(data.get("spaceStatus", ""))
-                        
-                        last_status = config["last_status"]
-                        has_pushed = config["has_pushed"]
-                        leave_time = config["leave_time"]
-                        
-                        # 核心逻辑：时间轴判定
-                        if current_status == "7":
-                            if last_status != "7":
-                                # 刚刚切入到临时离开状态，开始计时！
-                                print(f"[*] 用户 {user_id} 刚刚离馆，开始倒计时 {delay_minutes} 分钟。")
-                                config["leave_time"] = current_time
-                                config["has_pushed"] = False
-                            else:
-                                # 已经处于离开状态，检查是否达到了延迟时间
-                                if not has_pushed and leave_time is not None:
-                                    elapsed_minutes = (current_time - leave_time) / 60
-                                    
-                                    if elapsed_minutes >= delay_minutes:
-                                        await send_dingtalk_push( 
-                                            webhook_url=webhook_url,
-                                            title="⚠️ 图书馆座位状态提醒",
-                                            content=f"同学您好，您的座位已离开超过 {delay_minutes} 分钟。\n请注意把握时间，以免违规。"
-                                        )
-                                        # 标记已推送，防止重复轰炸
-                                        config["has_pushed"] = True
-                        else:
-                            # 如果状态不是 7（回去了，或者预约结束了），清理计时器
-                            config["leave_time"] = None
-                            config["has_pushed"] = False
+                # 从预约列表中找到当前生效的“座位”预约 (通常 type=1 表示座位)
+                if isinstance(reservations, list):
+                    for rsv in reservations:
+                        if rsv.get("type") == 1:
+                            current_status = str(rsv.get("spaceStatus", ""))
+                            break
+                
+                # 如果没有获取到状态，说明当前没有生效的座位预约，直接重置该用户状态并跳过
+                if not current_status:
+                    config["leave_time"] = None
+                    config["has_pushed"] = False
+                    config["last_status"] = None
+                    continue
+
+                # 读取旧状态
+                last_status = config["last_status"]
+                has_pushed = config["has_pushed"]
+                leave_time = config["leave_time"]
+                
+                if current_status == "7":
+                    need_back_time = datetime.strptime(rsv.get("needBackTime", ""), '%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')
+                    if last_status != "7":
+                        # 刚刚切入到临时离开状态，开始计时！
+                        print(f"[*] 用户 {user_id} 刚刚离馆，开始倒计时 {delay_minutes} 分钟。")
+                        config["leave_time"] = current_time
+                        config["has_pushed"] = False
+                        if delay_minutes == 0:
+                            # 如果没有设置延迟，立即推送
+                            await send_dingtalk_push( 
+                                webhook_url=webhook_url,
+                                title="⚠️ 临时离开提醒",
+                                content=f"同学您好，您的座位已离开，如果不需要座位请尽快进行完全离开操作，或在 {need_back_time} 前返回座位，以免违规。"
+                            )
+                            config["has_pushed"] = True
+                    else:
+                        # 已经处于离开状态，检查是否达到了延迟时间
+                        if not has_pushed and leave_time is not None:
+                            elapsed_minutes = (current_time - leave_time) / 60
                             
-                        # 更新上一轮状态
-                        config["last_status"] = current_status
-                        
+                            if elapsed_minutes >= delay_minutes:
+                                await send_dingtalk_push( 
+                                    webhook_url=webhook_url,
+                                    title="⚠️ 临时离开提醒",
+                                    content=f"同学您好，您的座位已离开超过 {delay_minutes} 分钟，如果不需要座位请尽快进行完全离开操作，或在 {need_back_time} 前返回座位，以免违规。"
+                                )
+                                # 标记已推送，防止重复轰炸
+                                config["has_pushed"] = True
+                else:
+                    # 如果状态不是 7（比如已落座是 6，或者预约结束），清理计时器
+                    config["leave_time"] = None
+                    config["has_pushed"] = False
+                    config["last_status"] = None
+                # 更新上一轮状态供下次循环比对
+                config["last_status"] = current_status
+                
             except Exception as e:
                 print(f"[-] 获取用户 {user_id} 状态失败: {e}")
                 

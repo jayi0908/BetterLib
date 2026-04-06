@@ -58,16 +58,25 @@ export default function Settings() {
     localStorage.setItem('setting_webhookUrl', webhookUrl);
     
     try {
-      const userId = localStorage.getItem('user_id') || 'test_user_01'; 
-      const userCookie = localStorage.getItem('user_cookie') || ''; 
+      // 获取用户ID和登录时保存的Token
+      const userId = localStorage.getItem('username') || 'test_user_01'; 
+      const userToken = localStorage.getItem('token') || ''; 
+
+      if (!userToken) {
+        alert("未获取到登录凭证，请重新登录后再设置！");
+        setIsTokenSaving(false);
+        return;
+      }
 
       const response = await fetch('https://libapi.jayi0908.cn/api/settings/push', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': userToken 
+        },
         body: JSON.stringify({
           user_id: userId,
           webhook_url: webhookUrl,
-          cookie: userCookie,
           push_delay: pushDelay
         })
       });

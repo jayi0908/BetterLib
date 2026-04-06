@@ -1,0 +1,9 @@
+{
+  "compass": "N",
+  "windowSide": "N",
+  "bookshelfSide": "S",
+  "bookshelfBeginDirection": "W",
+  "bookshelfEndDirection": "E",
+  "bookshelves": [
+  ]
+}

@@ -65,7 +65,6 @@ class BookRoomRequest(BaseModel):
 class PushConfigRequest(BaseModel):
     user_id: str
     webhook_url: str
-    cookie: str
     push_delay: int = 0
 
 class TestPushRequest(BaseModel):
@@ -94,11 +93,11 @@ async def get_user(lib: LibCore = Depends(get_lib_core)):
     return name
 
 @app.post("/api/settings/push")
-async def update_push_settings(config: PushConfigRequest):
-    # 记录用户的钉钉 Webhook 配置，并初始化跟踪计时器状态
+async def update_push_settings(config: PushConfigRequest, lib: LibCore = Depends(get_lib_core)):
+    # 记录用户的钉钉 Webhook 配置
     USER_PUSH_CONFIGS[config.user_id] = {
         "webhook_url": config.webhook_url,
-        "cookie": config.cookie,
+        "cookie": lib.authorization,  # 后端直接截获配置，不依赖前端 body 传递
         "push_delay": config.push_delay,
         "last_status": None,       
         "leave_time": None,        
