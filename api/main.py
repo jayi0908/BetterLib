@@ -171,11 +171,15 @@ async def return_seat(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
         raise HTTPException(status_code=400, detail="结束使用仅适用于座位预约")
     return lib.seat_return(req.id)
 
-@app.post("/seats/checkout")
-async def checkout_seat(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
+@app.post("/seats/checkout_inspace")
+async def checkout_seat_inspace(req: CancelRequest, lib: LibCore = Depends(get_lib_core)):
     if req.type != 1:
         raise HTTPException(status_code=400, detail="离开座位仅适用于座位预约")
-    return lib.seat_checkout(req.id)
+    return lib.seat_checkout_inspace(req.id)
+
+@app.post("/seats/checkout_outspace")
+async def checkout_seat_outspace(lib: LibCore = Depends(get_lib_core)):
+    return lib.seat_checkout_outspace()
 
 @app.post("/seats/set_power")
 async def set_power(data: PowerRequest, lib: LibCore = Depends(get_lib_core)):

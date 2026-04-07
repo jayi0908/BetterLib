@@ -133,10 +133,17 @@ class LibCore:
                                  json={"id": res_id, "authorization": self.authorization})
         return json.loads(resp.text)
     
-    def seat_checkout(self, res_id):
+    def seat_checkout_inspace(self, res_id):
         url = self.host + "/api/Space/checkout"
         resp = self.session.post(url, headers={"Authorization": self.authorization},
                                  json={"id": res_id, "authorization": self.authorization})
+        return json.loads(resp.text)
+    
+    def seat_checkout_outspace(self):
+        url = self.host + "/api/Seat/touch_qr_books"
+        aesjson = self.encrypt(json.dumps({"method":"checkout"}))
+        resp = self.session.post(url, headers={"Authorization": self.authorization},
+                                 json={"aesjson": aesjson, "authorization": self.authorization})
         return json.loads(resp.text)
 
     def seat_set_power(self, res_id, area_id, status):

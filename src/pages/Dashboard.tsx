@@ -326,7 +326,7 @@ export default function Dashboard() {
       let response;
       if (action === 'leave') response = await api.post('/seats/leave', cancelReq);
       else if (action === 'return') response = await api.post('/seats/return', cancelReq);
-      else if (action === 'checkout') response = await api.post('/seats/checkout', cancelReq);
+      else if (action === 'checkout') response = await api.post('/seats/checkout_inspace', cancelReq);
       else if (action === 'power') {
         response = await api.post('/seats/set_power', { req: cancelReq, area_id: res.area_id, status: extra.status });
       } else if (action === 'light') {
@@ -334,6 +334,10 @@ export default function Dashboard() {
       }
 
       if (response?.data?.code === 1 || response?.data?.code === 0) {
+        if (action === 'checkout' && response.data?.code === 0) {
+          response = await api.post('/seats/checkout_outspace');
+          showToast(response?.data?.msg || "操作结果未知，请刷新查看最新状态", response?.data?.code === 1 ? 'success' : 'error');
+        }
         if (['leave', 'return', 'checkout', 'power', 'light'].includes(action)) {
           if (action === 'checkout' && selectedRes?.id === res.id) setSelectedRes(null);
           fetchData();
