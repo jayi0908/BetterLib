@@ -337,8 +337,7 @@ export default function Dashboard() {
         if (action === 'checkout' && response.data?.code === 0) {
           response = await api.post('/seats/checkout_outspace');
           showToast(response?.data?.msg || "操作结果未知，请刷新查看最新状态", response?.data?.code === 1 ? 'success' : 'error');
-        }
-        if (['leave', 'return', 'checkout', 'power', 'light'].includes(action)) {
+        } else if (['leave', 'return', 'checkout', 'power', 'light'].includes(action)) {
           if (action === 'checkout' && selectedRes?.id === res.id) setSelectedRes(null);
           fetchData();
           if (response.data.msg) showToast(response.data.msg, 'success');
