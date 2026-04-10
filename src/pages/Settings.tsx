@@ -72,7 +72,7 @@ export default function Settings() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': '' 
+          'Authorization': 'Bearer'
         },
         body: JSON.stringify({
           user_id: userId,
