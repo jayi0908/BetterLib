@@ -60,7 +60,7 @@ export default function Settings() {
     try {
       // 获取用户ID和登录时保存的Token
       const userId = localStorage.getItem('zju_username') || 'test_user'; 
-      const userToken = localStorage.getItem('zju_password') || ''; 
+      const userToken = localStorage.getItem('zju_password'); 
 
       if (!userToken) {
         alert("未获取到登录凭证，请重新登录后再设置！");
