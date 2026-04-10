@@ -149,11 +149,16 @@ export default function MainLayout() {
       </aside>
 
       {/* 主内容区 (移动端增加动态 pb，防止内容被底部导航栏和安全区遮挡) */}
-      <main className="flex-1 overflow-hidden relative pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main className="flex-1 overflow-hidden relative pb-[calc(4rem+max(env(safe-area-inset-bottom),20px))] md:pb-0">
         <Outlet />
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#151618] border-t border-[#222326] flex justify-around items-center z-50 pt-2 pb-[env(safe-area-inset-bottom)]" style={{ height: 'calc(4rem + env(safe-area-inset-bottom))' }}>
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#151618] border-t border-[#222326] flex justify-around items-center z-50 pt-2" style={{ 
+        /* 如果 safe-area 为 0（比如安卓获取失败），就使用 20px 作为基础底部内边距防遮挡，
+       如果 safe-area 很大（比如 iPhone 的小黑条 34px），就优先使用真实的安全区 */
+        paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
+        height: 'calc(4rem + max(env(safe-area-inset-bottom), 20px))' 
+      }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
